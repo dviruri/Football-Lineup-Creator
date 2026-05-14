@@ -85,6 +85,60 @@
   #pitchCanvas { border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); max-width: 100%; height: auto; cursor: default; }
   .canvas-hint { font-size: 0.75rem; color: #555; margin-top: 10px; }
 
+  /* ── SQUAD ── */
+  .squad-header { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+  .squad-search { flex:1; margin:0; }
+  .squad-add-btn { background:#e94560; border:none; border-radius:6px; color:#fff; padding:7px 10px; font-size:0.8rem; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+  .squad-add-btn:hover { opacity:0.8; }
+  .squad-count { font-size:0.72rem; color:#888; margin-bottom:6px; }
+  .squad-list { display:flex; flex-direction:column; gap:3px; max-height:200px; overflow-y:auto; }
+  .squad-item { display:flex; align-items:center; gap:3px; background:#1a1a2e; border-radius:6px; padding:5px 7px; }
+  .squad-item-inactive { opacity:0.42; }
+  .squad-item-num { font-size:0.72rem; color:#e94560; font-weight:bold; width:26px; flex-shrink:0; text-align:center; }
+  .squad-item-name { flex:1; font-size:0.80rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .squad-item-type { font-size:0.68rem; font-weight:bold; width:34px; flex-shrink:0; text-align:center; }
+  .sq-btn { background:none; border:none; color:#666; cursor:pointer; padding:2px 4px; font-size:0.78rem; border-radius:3px; line-height:1; }
+  .sq-btn:hover { color:#eee; background:#2a2a5e; }
+  .sq-btn.del:hover { color:#e94560; }
+  .squad-empty { font-size:0.75rem; color:#555; text-align:center; padding:14px 0; }
+
+  /* ── PICK DROPDOWN ── */
+  .pick-btn { background:none; border:1px solid #2a2a5e; border-radius:4px; color:#888; cursor:pointer; width:24px; height:28px; font-size:0.72rem; flex-shrink:0; transition:all 0.15s; padding:0; }
+  .pick-btn:hover { border-color:#e94560; color:#e94560; }
+  .player-row.locked input[type=text],
+  .player-row.locked input[type=number] { color:#9baac8; border-color:#1d2d5e; background:#12193a; cursor:default; }
+  .player-row.locked .pick-btn { border-color:#e94560; color:#e94560; font-size:0.65rem; font-weight:bold; }
+  .player-row.locked .pick-btn:hover { background:rgba(233,69,96,0.18); }
+  .pick-dropdown { position:fixed; background:#0f3460; border:1px solid #e94560; border-radius:8px; z-index:9000; min-width:210px; max-height:220px; overflow-y:auto; box-shadow:0 8px 28px rgba(0,0,0,0.6); }
+  .pick-item { padding:7px 11px; cursor:pointer; font-size:0.82rem; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(255,255,255,0.04); }
+  .pick-item:last-child { border-bottom:none; }
+  .pick-item:hover { background:#1a1a2e; }
+  .pick-num { color:#e94560; font-weight:bold; width:26px; flex-shrink:0; font-size:0.75rem; }
+  .pick-type { font-size:0.68rem; flex-shrink:0; }
+
+  /* ── WARNINGS ── */
+  .lineup-warnings { margin-top:8px; display:flex; flex-direction:column; gap:3px; }
+  .w-item { font-size:0.74rem; padding:4px 8px; border-radius:4px; display:flex; align-items:flex-start; gap:5px; line-height:1.3; }
+  .w-item.warn  { background:rgba(241,196,15,0.12); color:#f1c40f; border-left:3px solid #f1c40f; }
+  .w-item.error { background:rgba(231,76,60,0.12); color:#e87060; border-left:3px solid #e94560; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:8000; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .modal-box { background:#16213e; border-radius:12px; padding:20px; width:100%; max-width:420px; max-height:92vh; overflow-y:auto; border:1px solid #0f3460; }
+  .modal-box h2 { font-size:1rem; color:#e94560; margin-bottom:14px; }
+  .modal-2col { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .modal-2col > div > input, .modal-2col > div > select { margin-bottom:0; }
+  .modal-label { font-size:0.78rem; color:#aaa; margin-bottom:3px; display:block; margin-top:10px; }
+  .modal-label:first-child { margin-top:0; }
+  .modal-note { font-size:0.7rem; color:#666; margin-bottom:8px; }
+  .pos-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:3px; margin-bottom:4px; }
+  .pos-chip { background:#1a1a2e; border:1px solid #2a2a5e; border-radius:4px; padding:4px 2px; font-size:0.68rem; cursor:pointer; text-align:center; color:#aaa; user-select:none; }
+  .pos-chip.sel { background:#e94560; border-color:#e94560; color:#fff; }
+  .modal-toggle-row { display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:4px; }
+  .modal-toggle-row span { font-size:0.82rem; color:#ccc; flex:1; }
+  .modal-actions { display:flex; gap:8px; margin-top:16px; }
+  .modal-actions button { flex:1; margin-top:0; }
+
   @media (max-width: 700px) {
     .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #0f3460; }
     .pitch-area { padding: 16px 8px; }
@@ -110,6 +164,19 @@
       <div class="color-row"><label>Number Color</label><input type="color" id="numberColor" value="#ffffff"></div>
       <div class="color-row"><label>Shorts Color</label><input type="color" id="shortsColor" value="#2c3e50"></div>
       <div class="color-row"><label>GK Jersey</label><input type="color" id="gkColor" value="#e8a020"></div>
+    </div>
+
+    <!-- SQUAD MANAGEMENT -->
+    <div class="section">
+      <h3>Squad Management</h3>
+      <div class="squad-header">
+        <input type="text" class="squad-search" id="squadSearchInput" placeholder="Search players…" oninput="squadSearch=this.value;renderSquadList()">
+        <button class="squad-add-btn" onclick="openPlayerModal()">+ Add</button>
+      </div>
+      <div class="squad-count" id="squadCount">No players saved</div>
+      <div class="squad-list" id="squadList">
+        <div class="squad-empty">No players yet — add your squad!</div>
+      </div>
     </div>
 
     <!-- KIT PATTERN -->
@@ -181,9 +248,11 @@
       <div style="display:flex;gap:4px;margin-bottom:6px;font-size:0.7rem;color:#888;">
         <span style="width:24px;text-align:right;">#</span>
         <span style="flex:1;margin-left:6px;">Name</span>
+        <span style="width:24px;"></span>
         <span style="width:52px;">Shirt #</span>
       </div>
       <div class="player-list" id="playerList"></div>
+      <div id="lineupWarnings" class="lineup-warnings"></div>
     </div>
 
     <!-- SUBSTITUTES -->
@@ -255,6 +324,46 @@
     <canvas id="pitchCanvas" width="640" height="800"></canvas>
     <p class="canvas-hint">Drag players to reposition · Changes re-render live</p>
   </div>
+</div>
+
+<!-- PLAYER MODAL -->
+<div id="playerModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closePlayerModal()">
+  <div class="modal-box">
+    <h2 id="modalTitle">Add Player</h2>
+    <div class="modal-2col">
+      <div><span class="modal-label">First Name</span><input type="text" id="mFirst" placeholder="First" oninput="autoFillDisplay()"></div>
+      <div><span class="modal-label">Last Name</span><input type="text" id="mLast" placeholder="Last" oninput="autoFillDisplay()"></div>
+    </div>
+    <span class="modal-label">Display Name <span style="color:#666;font-size:0.7rem;">(shown on jersey)</span></span>
+    <input type="text" id="mDisplay" placeholder="Display name" oninput="this.dataset.m='1'">
+    <div class="modal-2col">
+      <div><span class="modal-label">Shirt #</span><input type="number" id="mShirt" min="1" max="99" placeholder="#" style="margin-bottom:0;"></div>
+      <div><span class="modal-label">Strong Foot</span><select id="mFoot" style="margin-bottom:0;"><option>Right</option><option>Left</option><option>Both</option><option>Unknown</option></select></div>
+    </div>
+    <span class="modal-label">Player Type</span>
+    <select id="mType">
+      <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Attacker</option><option>Utility</option>
+    </select>
+    <span class="modal-label">Preferred Positions <span style="color:#666;font-size:0.7rem;">(tap to select)</span></span>
+    <div class="pos-grid" id="mPref"></div>
+    <span class="modal-label">Secondary Positions</span>
+    <div class="pos-grid" id="mSec"></div>
+    <span class="modal-label">Notes</span>
+    <input type="text" id="mNotes" placeholder="Optional coach notes">
+    <div class="modal-toggle-row">
+      <span>Active player</span>
+      <label class="toggle"><input type="checkbox" id="mActive" checked><span class="toggle-slider"></span></label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closePlayerModal()">Cancel</button>
+      <button class="btn-primary" onclick="savePlayerModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- PICK DROPDOWN -->
+<div id="pickDropdown" class="pick-dropdown" style="display:none;">
+  <div id="pickList"></div>
 </div>
 
 <script>
@@ -438,11 +547,14 @@ function buildPlayerList() {
   for (let i = 0; i <= outfieldCount; i++) {
     const row = document.createElement('div');
     row.className = 'player-row';
+    row.dataset.squadId = saved[i]?.squadId || '';
     row.innerHTML = `
       <span class="num">${i === 0 ? 'GK' : i}</span>
-      <input type="text"   value="${saved[i]?.name || (i===0?'Goalkeeper':'Player '+i)}">
+      <input type="text"   value="${esc(saved[i]?.name || (i===0?'Goalkeeper':'Player '+i))}">
+      <button class="pick-btn" title="Pick from squad" onclick="onPickBtn(event,this,${i},'starter')">👤</button>
       <input type="number" min="1" max="99" value="${saved[i]?.num || (i+1)}">`;
     list.appendChild(row);
+    if (saved[i]?.squadId) lockRow(row);
   }
   attachLiveRender('#playerList');
 }
@@ -454,19 +566,23 @@ function buildSubList() {
   for (let i = 0; i < subCount; i++) {
     const row = document.createElement('div');
     row.className = 'player-row';
+    row.dataset.squadId = saved[i]?.squadId || '';
     row.innerHTML = `
       <span class="num" style="color:#f39c12;">${i+1}</span>
-      <input type="text"   value="${saved[i]?.name || 'Sub '+(i+1)}">
+      <input type="text"   value="${esc(saved[i]?.name || 'Sub '+(i+1))}">
+      <button class="pick-btn" title="Pick from squad" onclick="onPickBtn(event,this,${i},'sub')">👤</button>
       <input type="number" min="1" max="99" value="${saved[i]?.num || (outfieldCount+2+i)}">`;
     list.appendChild(row);
+    if (saved[i]?.squadId) lockRow(row);
   }
   attachLiveRender('#subList');
 }
 
 function readRows(sel) {
   return [...document.querySelectorAll(sel + ' .player-row')].map(r => ({
-    name: r.querySelector('input[type=text]').value,
-    num:  r.querySelector('input[type=number]').value,
+    name:    r.querySelector('input[type=text]').value,
+    num:     r.querySelector('input[type=number]').value,
+    squadId: r.dataset.squadId || '',
   }));
 }
 
@@ -646,6 +762,7 @@ function render() {
   drawTeamLabel(L);
   if (badgeImg) drawBadge(L);
   ctx.restore();
+  checkWarnings();
 }
 
 // ── SURFACES ──────────────────────────────────────────────────────────────
@@ -1147,7 +1264,275 @@ function exportPNG() {
   a.href=canvas.toDataURL('image/png'); a.click();
 }
 
+// ── SQUAD ─────────────────────────────────────────────────────────────────
+const SQUAD_KEY = 'flc_squad';
+let squad       = [];
+let squadSearch = '';
+let editingId   = null;
+let pickTarget  = null; // { rowEl }
+
+const POSITIONS   = ['GK','CB','LB','RB','LWB','RWB','CDM','CM','CAM','LM','RM','LW','RW','ST','CF'];
+const TYPE_ABBR   = { Goalkeeper:'GK', Defender:'DEF', Midfielder:'MID', Attacker:'ATT', Utility:'UTL' };
+const TYPE_COLOR  = { Goalkeeper:'#e8a020', Defender:'#5b9bd5', Midfielder:'#2ecc71', Attacker:'#e94560', Utility:'#9b59b6' };
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function saveSquad() { localStorage.setItem(SQUAD_KEY, JSON.stringify(squad)); }
+function loadSquad() {
+  try { const s = localStorage.getItem(SQUAD_KEY); if (s) squad = JSON.parse(s); } catch(e) { squad = []; }
+  renderSquadList();
+}
+
+function getById(id) { return squad.find(p => p.id === id) || null; }
+
+function renderSquadList() {
+  const q   = squadSearch.toLowerCase();
+  const fil = squad.filter(p => !q || p.displayName.toLowerCase().includes(q) || String(p.shirtNumber||'').includes(q));
+  const cnt = document.getElementById('squadCount');
+  const active = squad.filter(p=>p.active).length;
+  cnt.textContent = squad.length ? `${squad.length} player${squad.length>1?'s':''} · ${active} active` : 'No players saved';
+
+  const list = document.getElementById('squadList');
+  if (!fil.length) {
+    list.innerHTML = `<div class="squad-empty">${squad.length ? 'No matches.' : 'No players yet — add your squad!'}</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  fil.forEach(p => {
+    const tc = TYPE_COLOR[p.playerType] || '#888';
+    const ta = TYPE_ABBR[p.playerType]  || '—';
+    const d  = document.createElement('div');
+    d.className = 'squad-item' + (p.active ? '' : ' squad-item-inactive');
+    d.innerHTML = `
+      <span class="squad-item-num">#${esc(p.shirtNumber||'—')}</span>
+      <span class="squad-item-name" title="${esc(p.displayName)}">${esc(p.displayName)}</span>
+      <span class="squad-item-type" style="color:${tc}">${ta}</span>
+      <button class="sq-btn" title="${p.active?'Mark inactive':'Mark active'}" onclick="toggleActive('${p.id}')">${p.active?'🟢':'⚫'}</button>
+      <button class="sq-btn" title="Edit" onclick="openPlayerModal('${p.id}')">✏️</button>
+      <button class="sq-btn" title="Duplicate" onclick="dupPlayer('${p.id}')">⧉</button>
+      <button class="sq-btn del" title="Delete" onclick="delPlayer('${p.id}')">✕</button>`;
+    list.appendChild(d);
+  });
+}
+
+function toggleActive(id) {
+  const p = getById(id); if (!p) return;
+  p.active = !p.active; saveSquad(); renderSquadList(); checkWarnings();
+}
+function delPlayer(id) {
+  if (!confirm('Remove this player from the squad?')) return;
+  squad = squad.filter(p => p.id !== id); saveSquad(); renderSquadList(); checkWarnings();
+}
+function dupPlayer(id) {
+  const p = getById(id); if (!p) return;
+  squad.push({ ...p, id: genId(), displayName: p.displayName + ' (copy)' });
+  saveSquad(); renderSquadList();
+}
+
+// ── PLAYER MODAL ──────────────────────────────────────────────────────────
+function openPlayerModal(id) {
+  editingId = id || null;
+  const p   = id ? getById(id) : null;
+  document.getElementById('modalTitle').textContent = p ? 'Edit Player' : 'Add Player';
+  document.getElementById('mFirst').value   = p?.firstName   || '';
+  document.getElementById('mLast').value    = p?.lastName    || '';
+  const dn = document.getElementById('mDisplay');
+  dn.value = p?.displayName || ''; dn.dataset.m = p ? '1' : '';
+  document.getElementById('mShirt').value   = p?.shirtNumber || '';
+  document.getElementById('mType').value    = p?.playerType  || 'Midfielder';
+  document.getElementById('mFoot').value    = p?.strongFoot  || 'Right';
+  document.getElementById('mNotes').value   = p?.notes       || '';
+  document.getElementById('mActive').checked = p ? p.active  : true;
+  renderChips('mPref', p?.preferredPositions  || []);
+  renderChips('mSec',  p?.secondaryPositions  || []);
+  document.getElementById('playerModal').style.display = 'flex';
+}
+function closePlayerModal() {
+  document.getElementById('playerModal').style.display = 'none'; editingId = null;
+}
+function renderChips(containerId, selected) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+  POSITIONS.forEach(pos => {
+    const c = document.createElement('div');
+    c.className = 'pos-chip' + (selected.includes(pos) ? ' sel' : '');
+    c.textContent = pos;
+    c.onclick = () => c.classList.toggle('sel');
+    el.appendChild(c);
+  });
+}
+function getChips(id) { return [...document.querySelectorAll(`#${id} .pos-chip.sel`)].map(c=>c.textContent); }
+function autoFillDisplay() {
+  const fn = document.getElementById('mFirst').value.trim();
+  const ln = document.getElementById('mLast').value.trim();
+  const dn = document.getElementById('mDisplay');
+  if (!dn.dataset.m) dn.value = [fn, ln].filter(Boolean).join(' ');
+}
+function savePlayerModal() {
+  const displayName = document.getElementById('mDisplay').value.trim() ||
+    [document.getElementById('mFirst').value.trim(), document.getElementById('mLast').value.trim()].filter(Boolean).join(' ') || 'Player';
+  const data = {
+    firstName: document.getElementById('mFirst').value.trim(),
+    lastName:  document.getElementById('mLast').value.trim(),
+    displayName,
+    shirtNumber:         document.getElementById('mShirt').value.trim(),
+    playerType:          document.getElementById('mType').value,
+    strongFoot:          document.getElementById('mFoot').value,
+    notes:               document.getElementById('mNotes').value.trim(),
+    active:              document.getElementById('mActive').checked,
+    preferredPositions:  getChips('mPref'),
+    secondaryPositions:  getChips('mSec'),
+  };
+  if (editingId) { const p = getById(editingId); if (p) Object.assign(p, data); }
+  else           { squad.push({ id: genId(), ...data }); }
+  saveSquad(); renderSquadList(); closePlayerModal(); checkWarnings();
+}
+
+// ── ROW LOCK / UNLOCK ─────────────────────────────────────────────────────
+function lockRow(row) {
+  row.classList.add('locked');
+  row.querySelector('input[type=text]').readOnly   = true;
+  row.querySelector('input[type=number]').readOnly = true;
+  const btn = row.querySelector('.pick-btn');
+  btn.textContent = '✕';
+  btn.title = 'Remove player';
+}
+
+function unlockRow(row) {
+  row.classList.remove('locked');
+  row.querySelector('input[type=text]').readOnly   = false;
+  row.querySelector('input[type=number]').readOnly = false;
+  const btn = row.querySelector('.pick-btn');
+  btn.textContent = '👤';
+  btn.title = 'Pick from squad';
+}
+
+function clearPick(row) {
+  row.dataset.squadId = '';
+  row.querySelector('input[type=text]').value  = '';
+  row.querySelector('input[type=number]').value = '';
+  unlockRow(row);
+  render();
+}
+
+// Unified button handler — picks if empty, clears if filled
+function onPickBtn(event, btn, rowIdx, slotType) {
+  event.stopPropagation();
+  const sel = slotType === 'starter' ? '#playerList' : '#subList';
+  const row = document.querySelectorAll(sel + ' .player-row')[rowIdx];
+  if (row.dataset.squadId) {
+    clearPick(row);
+  } else {
+    openPickDropdown(event, btn, rowIdx, slotType);
+  }
+}
+
+// ── PICK FROM SQUAD ───────────────────────────────────────────────────────
+function openPickDropdown(e, btn, rowIdx, slotType) {
+  e.stopPropagation();
+  const dd = document.getElementById('pickDropdown');
+  dd.style.display = 'none';
+  const activeSquad = squad.filter(p => p.active);
+  if (!activeSquad.length) { showToast('No active squad players. Add players in Squad Management.'); return; }
+  // (available filtering happens after pickTarget is set, below)
+
+  const sel  = slotType === 'starter' ? '#playerList' : '#subList';
+  pickTarget = document.querySelectorAll(sel + ' .player-row')[rowIdx];
+
+  // Collect squad IDs already used in other slots (not the current target slot)
+  const usedIds = new Set(
+    [...document.querySelectorAll('#playerList .player-row, #subList .player-row')]
+      .filter(r => r !== pickTarget && r.dataset.squadId)
+      .map(r => r.dataset.squadId)
+  );
+
+  const available = activeSquad.filter(p => !usedIds.has(p.id));
+
+  const list = document.getElementById('pickList');
+  list.innerHTML = '';
+
+  if (!available.length) {
+    list.innerHTML = '<div style="padding:10px 12px;font-size:0.78rem;color:#888;">All squad players are already in the lineup.</div>';
+    // still show dropdown so user sees the message
+  } else {
+    available.forEach(p => {
+      const tc = TYPE_COLOR[p.playerType] || '#888';
+      const ta = TYPE_ABBR[p.playerType]  || '';
+      const item = document.createElement('div');
+      item.className = 'pick-item';
+      item.innerHTML = `<span class="pick-num">#${esc(p.shirtNumber||'—')}</span><span style="flex:1">${esc(p.displayName)}</span><span class="pick-type" style="color:${tc}">${ta}</span>`;
+      item.onclick = (ev) => { ev.stopPropagation(); applyPick(p); };
+      list.appendChild(item);
+    });
+  }
+
+  // Position within viewport — fixed element uses viewport coords (no scrollY)
+  const r   = btn.getBoundingClientRect();
+  const ddH = Math.min(activeSquad.length * 38 + 8, 220);
+  const top = (r.bottom + 4 + ddH > window.innerHeight)
+    ? Math.max(4, r.top - ddH - 4)   // flip upward if not enough room below
+    : r.bottom + 4;
+  const left = Math.max(4, Math.min(r.left, window.innerWidth - 220));
+  dd.style.top  = top  + 'px';
+  dd.style.left = left + 'px';
+  dd.style.display = 'block';
+}
+function applyPick(p) {
+  if (!pickTarget) return;
+  pickTarget.querySelector('input[type=text]').value   = p.displayName;
+  pickTarget.querySelector('input[type=number]').value = p.shirtNumber || '';
+  pickTarget.dataset.squadId = p.id;
+  lockRow(pickTarget);
+  document.getElementById('pickDropdown').style.display = 'none';
+  pickTarget = null;
+  render();
+}
+document.addEventListener('click', () => {
+  const dd = document.getElementById('pickDropdown');
+  if (dd) dd.style.display = 'none';
+});
+
+// ── LINEUP WARNINGS ───────────────────────────────────────────────────────
+function checkWarnings() {
+  const issues    = [];
+  const shirtSeen = {};
+  const sqSeen    = {};
+
+  const check = (rows, label) => {
+    rows.forEach(row => {
+      const name  = row.querySelector('input[type=text]').value.trim();
+      const num   = row.querySelector('input[type=number]').value.trim();
+      const sqId  = row.dataset.squadId || '';
+      if (num) {
+        if (shirtSeen[num]) issues.push({ sev:'warn', msg:`Duplicate shirt #${num}` });
+        else shirtSeen[num] = true;
+      }
+      if (sqId) {
+        if (sqSeen[sqId]) issues.push({ sev:'error', msg:`${name || 'A player'} appears more than once` });
+        else sqSeen[sqId] = true;
+        const sp = getById(sqId);
+        if (sp && !sp.active) issues.push({ sev:'warn', msg:`${name} is marked inactive` });
+      }
+    });
+  };
+
+  check(document.querySelectorAll('#playerList .player-row'), 'starter');
+  check(document.querySelectorAll('#subList .player-row'),    'sub');
+
+  const container = document.getElementById('lineupWarnings');
+  if (!container) return;
+  container.innerHTML = '';
+  issues.forEach(iss => {
+    const d = document.createElement('div');
+    d.className = `w-item ${iss.sev}`;
+    d.innerHTML = `<span>${iss.sev === 'error' ? '🔴' : '⚠️'}</span>${esc(iss.msg)}`;
+    container.appendChild(d);
+  });
+}
+
 // ── STARTUP ───────────────────────────────────────────────────────────────
+loadSquad();
 buildFormationButtons();
 buildPlayerList();
 buildSubList();
