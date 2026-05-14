@@ -4,146 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Football Lineup Creator</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; display: flex; flex-direction: column; }
-  header { background: linear-gradient(135deg, #16213e, #0f3460); padding: 16px 24px; text-align: center; border-bottom: 2px solid #e94560; }
-  header h1 { font-size: 1.8rem; color: #e94560; letter-spacing: 2px; }
-  header p  { font-size: 0.85rem; color: #aaa; margin-top: 4px; }
-  .app { display: flex; flex: 1; flex-wrap: wrap; }
-
-  .sidebar { width: 340px; background: #16213e; padding: 16px; overflow-y: auto; border-right: 1px solid #0f3460; flex-shrink: 0; }
-  .section { background: #0f3460; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
-  .section h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #e94560; margin-bottom: 12px; border-bottom: 1px solid #1a1a2e; padding-bottom: 6px; }
-  label { font-size: 0.82rem; color: #ccc; display: block; margin-bottom: 4px; }
-  select, input[type=text], input[type=number] { width: 100%; padding: 7px 10px; background: #1a1a2e; border: 1px solid #2a2a5e; border-radius: 6px; color: #eee; font-size: 0.85rem; margin-bottom: 10px; outline: none; transition: border-color 0.2s; }
-  select:focus, input:focus { border-color: #e94560; }
-  .color-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-  .color-row label { margin: 0; flex: 1; }
-  input[type=color] { width: 44px; height: 34px; padding: 2px; border-radius: 6px; border: 1px solid #2a2a5e; background: #1a1a2e; cursor: pointer; }
-
-  .formation-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 10px; }
-  .formation-btn { background: #1a1a2e; border: 1px solid #2a2a5e; border-radius: 6px; color: #ccc; font-size: 0.78rem; padding: 6px 4px; cursor: pointer; text-align: center; transition: all 0.2s; }
-  .formation-btn:hover, .formation-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
-
-  .custom-form-row { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
-  .custom-form-row input { flex: 1; margin-bottom: 0; }
-  .apply-btn { background: #e94560; border: none; border-radius: 6px; color: #fff; padding: 7px 12px; cursor: pointer; font-size: 0.8rem; white-space: nowrap; flex-shrink: 0; transition: opacity 0.2s; }
-  .apply-btn:hover { opacity: 0.8; }
-  .form-msg { font-size: 0.75rem; margin-top: 4px; min-height: 16px; }
-
-  .player-list { display: flex; flex-direction: column; gap: 6px; }
-  .player-row { display: flex; gap: 6px; align-items: center; }
-  .player-row .num { width: 24px; font-size: 0.75rem; color: #e94560; font-weight: bold; text-align: right; flex-shrink: 0; }
-  .player-row input[type=text]   { flex: 1; margin-bottom: 0; padding: 5px 8px; font-size: 0.8rem; }
-  .player-row input[type=number] { width: 52px; margin-bottom: 0; padding: 5px 6px; font-size: 0.8rem; }
-
-  .staff-sub { font-size: 0.78rem; color: #e94560; font-weight: bold; margin-bottom: 6px; margin-top: 2px; }
-  .staff-divider { border-top: 1px solid #1a1a2e; margin: 10px 0; }
-  .staff-extras { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
-  .staff-extras .color-row { flex: 1; margin: 0; }
-  .initials-wrap { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
-  .initials-wrap label { margin: 0; white-space: nowrap; font-size: 0.78rem; }
-  .initials-wrap input { width: 48px; margin: 0; text-align: center; padding: 5px 6px; }
-
-  .pitch-type-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
-  .pitch-btn { background: #1a1a2e; border: 1px solid #2a2a5e; border-radius: 6px; color: #ccc; font-size: 0.78rem; padding: 8px 4px; cursor: pointer; text-align: center; transition: all 0.2s; display: flex; flex-direction: column; gap: 3px; align-items: center; }
-  .pitch-btn .icon { font-size: 1.1rem; }
-  .pitch-btn:hover, .pitch-btn.active { background: #0f3460; border-color: #e94560; color: #fff; }
-
-  .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .toggle-row label { margin: 0; flex: 1; }
-  .toggle-row .toggle { flex: none; }
-  .toggle { position: relative; display: inline-block; width: 42px; height: 22px; flex: none; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #2a2a5e; border-radius: 22px; transition: 0.3s; }
-  .toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #aaa; border-radius: 50%; transition: 0.3s; }
-  .toggle input:checked + .toggle-slider { background: #e94560; }
-  .toggle input:checked + .toggle-slider:before { transform: translateX(20px); background: #fff; }
-
-  .pattern-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
-  .pattern-row select { flex: 1; margin-bottom: 0; }
-
-  .badge-upload { display: flex; flex-direction: column; gap: 6px; }
-  .badge-upload input[type=file] { background: #1a1a2e; border: 1px solid #2a2a5e; border-radius: 6px; color: #aaa; font-size: 0.78rem; padding: 6px; cursor: pointer; }
-  .badge-preview { width: 48px; height: 48px; border-radius: 6px; border: 1px solid #2a2a5e; object-fit: contain; background: #1a1a2e; display: none; }
-  .badge-row { display: flex; align-items: center; gap: 10px; }
-  .clear-badge-btn { background: none; border: 1px solid #e94560; border-radius: 5px; color: #e94560; font-size: 0.75rem; padding: 4px 8px; cursor: pointer; white-space: nowrap; }
-  .clear-badge-btn:hover { background: #e94560; color: #fff; }
-
-  .share-area { display: flex; flex-direction: column; gap: 6px; }
-  .share-btn { background: linear-gradient(135deg,#e94560,#c0392b); border: none; border-radius: 8px; color: #fff; padding: 9px 16px; font-size: 0.85rem; cursor: pointer; width: 100%; font-weight: bold; transition: opacity 0.2s; }
-  .share-btn:hover { opacity: 0.85; }
-  .share-toast { font-size: 0.78rem; color: #2ecc71; min-height: 18px; text-align: center; }
-
-  .btn-primary { background: linear-gradient(135deg,#e94560,#c0392b); border: none; border-radius: 8px; color: #fff; padding: 10px 20px; font-size: 0.9rem; cursor: pointer; width: 100%; font-weight: bold; letter-spacing: 1px; transition: opacity 0.2s; margin-top: 4px; }
-  .btn-primary:hover { opacity: 0.85; }
-  .btn-secondary { background: #1a1a2e; border: 1px solid #e94560; border-radius: 8px; color: #e94560; padding: 8px 16px; font-size: 0.82rem; cursor: pointer; width: 100%; transition: all 0.2s; margin-top: 6px; }
-  .btn-secondary:hover { background: #e94560; color: #fff; }
-
-  .pitch-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 24px 16px; background: #12121f; min-width: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-  #pitchCanvas { border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); max-width: 100%; height: auto; cursor: default; }
-  .canvas-hint { font-size: 0.75rem; color: #555; margin-top: 10px; }
-
-  /* ── SQUAD ── */
-  .squad-header { display:flex; gap:6px; align-items:center; margin-bottom:8px; }
-  .squad-search { flex:1; margin:0; }
-  .squad-add-btn { background:#e94560; border:none; border-radius:6px; color:#fff; padding:7px 10px; font-size:0.8rem; cursor:pointer; white-space:nowrap; flex-shrink:0; }
-  .squad-add-btn:hover { opacity:0.8; }
-  .squad-count { font-size:0.72rem; color:#888; margin-bottom:6px; }
-  .squad-list { display:flex; flex-direction:column; gap:3px; max-height:200px; overflow-y:auto; }
-  .squad-item { display:flex; align-items:center; gap:3px; background:#1a1a2e; border-radius:6px; padding:5px 7px; }
-  .squad-item-inactive { opacity:0.42; }
-  .squad-item-num { font-size:0.72rem; color:#e94560; font-weight:bold; width:26px; flex-shrink:0; text-align:center; }
-  .squad-item-name { flex:1; font-size:0.80rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .squad-item-type { font-size:0.68rem; font-weight:bold; width:34px; flex-shrink:0; text-align:center; }
-  .sq-btn { background:none; border:none; color:#666; cursor:pointer; padding:2px 4px; font-size:0.78rem; border-radius:3px; line-height:1; }
-  .sq-btn:hover { color:#eee; background:#2a2a5e; }
-  .sq-btn.del:hover { color:#e94560; }
-  .squad-empty { font-size:0.75rem; color:#555; text-align:center; padding:14px 0; }
-
-  /* ── PICK DROPDOWN ── */
-  .pick-btn { background:none; border:1px solid #2a2a5e; border-radius:4px; color:#888; cursor:pointer; width:24px; height:28px; font-size:0.72rem; flex-shrink:0; transition:all 0.15s; padding:0; }
-  .pick-btn:hover { border-color:#e94560; color:#e94560; }
-  .player-row.locked input[type=text],
-  .player-row.locked input[type=number] { color:#9baac8; border-color:#1d2d5e; background:#12193a; cursor:default; }
-  .player-row.locked .pick-btn { border-color:#e94560; color:#e94560; font-size:0.65rem; font-weight:bold; }
-  .player-row.locked .pick-btn:hover { background:rgba(233,69,96,0.18); }
-  .pick-dropdown { position:fixed; background:#0f3460; border:1px solid #e94560; border-radius:8px; z-index:9000; min-width:210px; max-height:220px; overflow-y:auto; box-shadow:0 8px 28px rgba(0,0,0,0.6); }
-  .pick-item { padding:7px 11px; cursor:pointer; font-size:0.82rem; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(255,255,255,0.04); }
-  .pick-item:last-child { border-bottom:none; }
-  .pick-item:hover { background:#1a1a2e; }
-  .pick-num { color:#e94560; font-weight:bold; width:26px; flex-shrink:0; font-size:0.75rem; }
-  .pick-type { font-size:0.68rem; flex-shrink:0; }
-
-  /* ── WARNINGS ── */
-  .lineup-warnings { margin-top:8px; display:flex; flex-direction:column; gap:3px; }
-  .w-item { font-size:0.74rem; padding:4px 8px; border-radius:4px; display:flex; align-items:flex-start; gap:5px; line-height:1.3; }
-  .w-item.warn  { background:rgba(241,196,15,0.12); color:#f1c40f; border-left:3px solid #f1c40f; }
-  .w-item.error { background:rgba(231,76,60,0.12); color:#e87060; border-left:3px solid #e94560; }
-
-  /* ── MODAL ── */
-  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:8000; display:flex; align-items:center; justify-content:center; padding:16px; }
-  .modal-box { background:#16213e; border-radius:12px; padding:20px; width:100%; max-width:420px; max-height:92vh; overflow-y:auto; border:1px solid #0f3460; }
-  .modal-box h2 { font-size:1rem; color:#e94560; margin-bottom:14px; }
-  .modal-2col { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  .modal-2col > div > input, .modal-2col > div > select { margin-bottom:0; }
-  .modal-label { font-size:0.78rem; color:#aaa; margin-bottom:3px; display:block; margin-top:10px; }
-  .modal-label:first-child { margin-top:0; }
-  .modal-note { font-size:0.7rem; color:#666; margin-bottom:8px; }
-  .pos-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:3px; margin-bottom:4px; }
-  .pos-chip { background:#1a1a2e; border:1px solid #2a2a5e; border-radius:4px; padding:4px 2px; font-size:0.68rem; cursor:pointer; text-align:center; color:#aaa; user-select:none; }
-  .pos-chip.sel { background:#e94560; border-color:#e94560; color:#fff; }
-  .modal-toggle-row { display:flex; align-items:center; gap:10px; margin-top:10px; margin-bottom:4px; }
-  .modal-toggle-row span { font-size:0.82rem; color:#ccc; flex:1; }
-  .modal-actions { display:flex; gap:8px; margin-top:16px; }
-  .modal-actions button { flex:1; margin-top:0; }
-
-  @media (max-width: 700px) {
-    .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #0f3460; }
-    .pitch-area { padding: 16px 8px; }
-  }
-</style>
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
@@ -155,15 +16,120 @@
 <div class="app">
   <div class="sidebar">
 
-    <!-- TEAM -->
+    <!-- MATCH SETUP -->
     <div class="section">
-      <h3>Team</h3>
+      <h3>Match Setup</h3>
+      <div id="matchMeta" class="match-meta" style="display:none;"></div>
+      <label>Match Title</label>
+      <input type="text" id="matchTitle" placeholder="e.g. U12 Cup Semi-Final" oninput="saveMatch()">
+      <div class="match-field-row">
+        <div>
+          <label>Date</label>
+          <input type="date" id="matchDate" onchange="saveMatch()">
+        </div>
+        <div>
+          <label>Format</label>
+          <select id="matchFormat" onchange="onMatchFormatChange()">
+            <option value="">— Any —</option>
+            <option value="5v5">5v5</option>
+            <option value="6v6">6v6</option>
+            <option value="7v7">7v7</option>
+            <option value="8v8">8v8</option>
+            <option value="9v9">9v9</option>
+            <option value="11v11">11v11</option>
+          </select>
+        </div>
+      </div>
+      <label>Opponent</label>
+      <input type="text" id="matchOpponent" placeholder="Opponent team name" oninput="saveMatch();syncOppName()">
+      <div class="toggle-row" style="margin-top:-4px;margin-bottom:4px;">
+        <label style="color:#888;font-size:0.78rem;">Show opponent on pitch</label>
+        <label class="toggle"><input type="checkbox" id="showOpponent" onchange="onOpponentToggle()"><span class="toggle-slider"></span></label>
+      </div>
+      <div id="opponentSection" style="display:none;margin-bottom:6px;">
+        <div class="color-row"><label>Jersey Color</label><input type="color" id="oppJerseyColor" value="#3498db"></div>
+        <div class="color-row"><label>Number Color</label><input type="color" id="oppNumberColor" value="#ffffff"></div>
+        <div class="color-row"><label>Shorts Color</label><input type="color" id="oppShortsColor" value="#1a252f"></div>
+        <label>Formation</label>
+        <div class="custom-form-row" style="margin-top:0;">
+          <input type="text" id="oppFormInput" placeholder="e.g. 4-3-3" value="4-3-3" oninput="onOppFormInput()">
+          <button class="apply-btn" onclick="applyOppFormation()">Apply</button>
+        </div>
+        <div class="form-msg" id="oppFormMsg"></div>
+      </div>
+      <label>Venue</label>
+      <input type="text" id="matchVenue" placeholder="Stadium / pitch name" oninput="saveMatch()">
+      <div class="match-field-row">
+        <div>
+          <label>Duration (min)</label>
+          <input type="number" id="matchDuration" min="10" max="180" value="90" oninput="saveMatch()">
+        </div>
+        <div>
+          <label>Periods</label>
+          <input type="number" id="matchPeriods" min="1" max="4" value="2" oninput="saveMatch()">
+        </div>
+      </div>
+      <label>Home / Away</label>
+      <div class="ha-group">
+        <button class="ha-btn active" data-ha="home" onclick="setHA('home',this)">🏠 Home</button>
+        <button class="ha-btn" data-ha="away" onclick="setHA('away',this)">✈️ Away</button>
+        <button class="ha-btn" data-ha="neutral" onclick="setHA('neutral',this)">⚖️ Neutral</button>
+      </div>
+      <label>Pitch Surface</label>
+      <div class="pitch-type-grid">
+        <button class="pitch-btn active" onclick="setPitch('grass',this)"><span class="icon">🌿</span>Grass</button>
+        <button class="pitch-btn" onclick="setPitch('hard',this)"><span class="icon">🏟️</span>Hard</button>
+        <button class="pitch-btn" onclick="setPitch('indoor',this)"><span class="icon">🏠</span>Indoor</button>
+      </div>
+      <label>Notes</label>
+      <textarea id="matchNotes" class="match-textarea" placeholder="Tactical notes, reminders…" rows="3" oninput="saveMatch()"></textarea>
+    </div>
+
+    <!-- TEAM SETUP -->
+    <div class="section">
+      <h3>Team Setup</h3>
       <label>Team Name</label>
       <input type="text" id="teamName" value="My Team">
       <div class="color-row"><label>Jersey Color</label><input type="color" id="jerseyColor" value="#e74c3c"></div>
       <div class="color-row"><label>Number Color</label><input type="color" id="numberColor" value="#ffffff"></div>
       <div class="color-row"><label>Shorts Color</label><input type="color" id="shortsColor" value="#2c3e50"></div>
       <div class="color-row"><label>GK Jersey</label><input type="color" id="gkColor" value="#e8a020"></div>
+      <div class="staff-divider"></div>
+      <label>Kit Pattern</label>
+      <div class="pattern-row">
+        <select id="kitPattern" onchange="render()">
+          <option value="plain">Plain</option>
+          <option value="vstripes">Vertical Stripes</option>
+          <option value="hoops">Hoops</option>
+          <option value="sash">Sash</option>
+          <option value="halves">Half &amp; Half</option>
+          <option value="sleeves">Sleeves</option>
+        </select>
+        <input type="color" id="patternColor" value="#ffffff" style="flex-shrink:0;" oninput="render()">
+      </div>
+      <label style="font-size:0.75rem;color:#888;">Pattern color shown over jersey</label>
+      <div class="staff-divider"></div>
+      <label>Formation</label>
+      <!-- outfieldSlider/Count kept hidden — driven by Match Format -->
+      <span id="outfieldCount" style="display:none">10</span>
+      <input type="range" id="outfieldSlider" min="4" max="10" value="10" style="display:none">
+      <div class="formation-grid" id="formationGrid"></div>
+      <label style="margin-top:6px;">Custom formation</label>
+      <div class="custom-form-row">
+        <input type="text" id="customFormInput" placeholder="e.g. 4-2-3-1" oninput="onCustomFormInput()">
+        <button class="apply-btn" onclick="applyCustomFormation()">Apply</button>
+      </div>
+      <div class="form-msg" id="formMsg"></div>
+      <div class="staff-divider"></div>
+      <label>Club Badge</label>
+      <div class="badge-upload">
+        <input type="file" id="badgeFile" accept="image/*" onchange="loadBadge(this)">
+        <div class="badge-row">
+          <img id="badgePreview" class="badge-preview" alt="badge">
+          <button class="clear-badge-btn" id="clearBadgeBtn" onclick="clearBadge()" style="display:none;">Remove</button>
+        </div>
+        <label style="font-size:0.72rem;color:#666;margin-top:2px;">Shown in bottom-left of pitch</label>
+      </div>
     </div>
 
     <!-- SQUAD MANAGEMENT -->
@@ -177,69 +143,6 @@
       <div class="squad-list" id="squadList">
         <div class="squad-empty">No players yet — add your squad!</div>
       </div>
-    </div>
-
-    <!-- KIT PATTERN -->
-    <div class="section">
-      <h3>Kit Pattern</h3>
-      <div class="pattern-row">
-        <select id="kitPattern" onchange="render()">
-          <option value="plain">Plain</option>
-          <option value="vstripes">Vertical Stripes</option>
-          <option value="hoops">Hoops</option>
-          <option value="sash">Sash</option>
-          <option value="halves">Half &amp; Half</option>
-          <option value="sleeves">Sleeves</option>
-        </select>
-        <input type="color" id="patternColor" value="#ffffff" style="flex-shrink:0;" oninput="render()">
-      </div>
-      <label style="font-size:0.75rem;color:#888;">Pattern color shown over jersey</label>
-    </div>
-
-    <!-- PITCH TYPE -->
-    <div class="section">
-      <h3>Pitch Type</h3>
-      <div class="pitch-type-grid">
-        <button class="pitch-btn active" onclick="setPitch('grass',this)"><span class="icon">🌿</span>Grass</button>
-        <button class="pitch-btn" onclick="setPitch('hard',this)"><span class="icon">🏟️</span>Hard</button>
-        <button class="pitch-btn" onclick="setPitch('indoor',this)"><span class="icon">🏠</span>Indoor</button>
-      </div>
-    </div>
-
-    <!-- OPPONENT -->
-    <div class="section">
-      <h3>Opponent</h3>
-      <div class="toggle-row">
-        <label>Show opponent team</label>
-        <label class="toggle"><input type="checkbox" id="showOpponent" onchange="onOpponentToggle()"><span class="toggle-slider"></span></label>
-      </div>
-      <div id="opponentSection" style="display:none;">
-        <label>Opponent Name</label>
-        <input type="text" id="oppName" value="Opponent">
-        <div class="color-row"><label>Jersey Color</label><input type="color" id="oppJerseyColor" value="#3498db"></div>
-        <div class="color-row"><label>Number Color</label><input type="color" id="oppNumberColor" value="#ffffff"></div>
-        <div class="color-row"><label>Shorts Color</label><input type="color" id="oppShortsColor" value="#1a252f"></div>
-        <label>Formation</label>
-        <div class="custom-form-row" style="margin-top:0;">
-          <input type="text" id="oppFormInput" placeholder="e.g. 4-3-3" value="4-3-3" oninput="onOppFormInput()">
-          <button class="apply-btn" onclick="applyOppFormation()">Apply</button>
-        </div>
-        <div class="form-msg" id="oppFormMsg"></div>
-      </div>
-    </div>
-
-    <!-- FORMATION -->
-    <div class="section">
-      <h3>Formation</h3>
-      <label>Outfield players: <span id="outfieldCount">10</span></label>
-      <input type="range" id="outfieldSlider" min="5" max="10" value="10" style="width:100%;accent-color:#e94560;margin-bottom:10px;">
-      <div class="formation-grid" id="formationGrid"></div>
-      <label style="margin-top:6px;">Custom formation</label>
-      <div class="custom-form-row">
-        <input type="text" id="customFormInput" placeholder="e.g. 4-2-3-1" oninput="onCustomFormInput()">
-        <button class="apply-btn" onclick="applyCustomFormation()">Apply</button>
-      </div>
-      <div class="form-msg" id="formMsg"></div>
     </div>
 
     <!-- STARTING XI -->
@@ -289,20 +192,6 @@
           <label>Initials</label>
           <input type="text" id="asstInitials" value="AC" maxlength="3">
         </div>
-      </div>
-    </div>
-
-    <!-- CLUB BADGE -->
-    <div class="section">
-      <h3>Club Badge</h3>
-      <div class="badge-upload">
-        <label style="margin-bottom:4px;">Upload badge / logo</label>
-        <input type="file" id="badgeFile" accept="image/*" onchange="loadBadge(this)">
-        <div class="badge-row">
-          <img id="badgePreview" class="badge-preview" alt="badge">
-          <button class="clear-badge-btn" id="clearBadgeBtn" onclick="clearBadge()" style="display:none;">Remove</button>
-        </div>
-        <label style="font-size:0.72rem;color:#666;margin-top:2px;">Shown in bottom-left of pitch</label>
       </div>
     </div>
 
@@ -366,1191 +255,13 @@
   <div id="pickList"></div>
 </div>
 
-<script>
-// ── STATE ─────────────────────────────────────────────────────────────────
-let pitchType        = 'grass';
-let outfieldCount    = 10;
-let currentFormation = null;
-let oppFormation     = '4-3-3';
-let subCount         = 5;
-let badgeImg         = null;
-let customPositions  = {};   // { playerIndex: {x, y} }
-let dragState        = null; // { idx, offX, offY }
-let lastPositions    = [];   // cached for hit-test
-
-const FORMATIONS = {
-  5:  [['4-1'],['3-2'],['2-3']],
-  6:  [['4-2'],['3-3'],['2-4']],
-  7:  [['4-3'],['3-4'],['3-3-1']],
-  8:  [['4-4'],['3-4-1'],['4-3-1']],
-  9:  [['4-4-1'],['3-5-1'],['4-3-2']],
-  10: [['4-3-3'],['4-4-2'],['3-5-2'],['5-3-2'],['4-2-3-1'],['3-4-3']],
-};
-
-// ── LAYOUT ────────────────────────────────────────────────────────────────
-function computeLayout() {
-  const dual = document.getElementById('showOpponent')?.checked || false;
-  const W  = 640;
-  const PP = 28;
-  const PW = W - PP * 2;          // 584
-  const PH = dual ? 390 : 520;    // each half height
-  const PT = dual ? 30 : 36;      // pitch top
-  const PB = dual ? PT + PH*2 : PT + PH;
-  const ARC_R  = Math.round(PW * 0.110);
-  const GOAL_W = Math.round(PW * 0.200);
-  const GOAL_D = 20;
-  const BT     = PB + GOAL_D + 16;
-  const SEAT_Y = BT + 90;
-  const SEAT_H = 12;
-  const LEG_H  = 16;
-  const NAME_Y = SEAT_Y + SEAT_H + LEG_H + 6;
-  const H      = NAME_Y + 30;
-  const FIELD_SIZE = dual ? 19 : 23;
-  const MID_Y = dual ? PT + PH : null;
-  return { W, H, PP, PW, PH, PT, PB, ARC_R, GOAL_W, GOAL_D, BT, SEAT_Y, SEAT_H, LEG_H, NAME_Y, FIELD_SIZE, MID_Y, dual };
-}
-
-// ── SIDEBAR LOGIC ─────────────────────────────────────────────────────────
-function setOutfield(n) {
-  outfieldCount    = parseInt(n);
-  document.getElementById('outfieldCount').textContent = n;
-  currentFormation = null;
-  oppFormation     = (FORMATIONS[outfieldCount] || [['4-3-3']])[0][0];
-  document.getElementById('oppFormInput').value = oppFormation;
-  document.getElementById('oppFormMsg').textContent = '';
-  customPositions  = {};
-  buildFormationButtons();
-  buildPlayerList();
-  render();
-}
-
-function setSubCount(n) {
-  subCount = parseInt(n);
-  document.getElementById('subCountLabel').textContent = n;
-  buildSubList();
-  render();
-}
-
-function setPitch(type, el) {
-  pitchType = type;
-  document.querySelectorAll('.pitch-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  render();
-}
-
-function onOpponentToggle() {
-  const on = document.getElementById('showOpponent').checked;
-  document.getElementById('opponentSection').style.display = on ? '' : 'none';
-  customPositions = {};
-  render();
-}
-
-function onOppFormInput() {
-  const val = document.getElementById('oppFormInput').value.trim();
-  const msg = document.getElementById('oppFormMsg');
-  if (!val) { msg.textContent = ''; return; }
-  const r = validateAnyFormation(val, outfieldCount);
-  msg.style.color = r.ok ? '#2ecc71' : '#e94560';
-  msg.textContent = r.text;
-}
-
-function applyOppFormation() {
-  const val = document.getElementById('oppFormInput').value.trim();
-  const msg = document.getElementById('oppFormMsg');
-  if (!val) return;
-  const r = validateAnyFormation(val, outfieldCount);
-  msg.style.color = r.ok ? '#2ecc71' : '#e94560';
-  msg.textContent = r.text;
-  if (!r.ok) return;
-  oppFormation = val;
-  render();
-}
-
-function buildFormationButtons() {
-  const grid = document.getElementById('formationGrid');
-  grid.innerHTML = '';
-  const opts = FORMATIONS[outfieldCount] || [];
-  opts.forEach(([key]) => {
-    const btn = document.createElement('button');
-    btn.className = 'formation-btn' + (currentFormation === key ? ' active' : '');
-    btn.textContent = key;
-    btn.onclick = () => selectFormation(key, btn);
-    grid.appendChild(btn);
-  });
-  if (!currentFormation && opts.length) {
-    currentFormation = opts[0][0];
-    grid.firstChild && grid.firstChild.classList.add('active');
-  }
-}
-
-function selectFormation(key, btn) {
-  currentFormation = key;
-  customPositions  = {};
-  document.querySelectorAll('.formation-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('customFormInput').value = '';
-  document.getElementById('formMsg').textContent = '';
-  render();
-}
-
-function onCustomFormInput() {
-  const val = document.getElementById('customFormInput').value.trim();
-  const msg = document.getElementById('formMsg');
-  if (!val) { msg.textContent = ''; return; }
-  const r = validateFormation(val);
-  msg.style.color = r.ok ? '#2ecc71' : '#e94560';
-  msg.textContent = r.text;
-}
-
-function applyCustomFormation() {
-  const val = document.getElementById('customFormInput').value.trim();
-  const msg = document.getElementById('formMsg');
-  if (!val) return;
-  const r = validateFormation(val);
-  msg.style.color = r.ok ? '#2ecc71' : '#e94560';
-  msg.textContent = r.text;
-  if (!r.ok) return;
-  currentFormation = val;
-  customPositions  = {};
-  document.querySelectorAll('.formation-btn').forEach(b => b.classList.remove('active'));
-  render();
-}
-
-function validateFormation(val) {
-  if (!/^\d+(-\d+)+$/.test(val))
-    return { ok: false, text: 'Format: numbers separated by dashes (e.g. 4-3-3)' };
-  const parts = val.split('-').map(Number);
-  if (parts.some(p => p < 1))
-    return { ok: false, text: 'Each line must have at least 1 player' };
-  const sum = parts.reduce((a, b) => a + b, 0);
-  if (sum !== outfieldCount)
-    return { ok: false, text: `Must sum to ${outfieldCount} outfield players (got ${sum})` };
-  return { ok: true, text: `✓ Valid — ${val}` };
-}
-
-function validateAnyFormation(val, n) {
-  if (!/^\d+(-\d+)+$/.test(val))
-    return { ok: false, text: 'Format: numbers separated by dashes' };
-  const parts = val.split('-').map(Number);
-  if (parts.some(p => p < 1))
-    return { ok: false, text: 'Each line must have at least 1 player' };
-  const sum = parts.reduce((a, b) => a + b, 0);
-  if (sum !== n)
-    return { ok: false, text: `Must sum to ${n} (got ${sum})` };
-  return { ok: true, text: `✓ Valid — ${val}` };
-}
-
-function buildPlayerList() {
-  const list  = document.getElementById('playerList');
-  const saved = readRows('#playerList');
-  list.innerHTML = '';
-  for (let i = 0; i <= outfieldCount; i++) {
-    const row = document.createElement('div');
-    row.className = 'player-row';
-    row.dataset.squadId = saved[i]?.squadId || '';
-    row.innerHTML = `
-      <span class="num">${i === 0 ? 'GK' : i}</span>
-      <input type="text"   value="${esc(saved[i]?.name || (i===0?'Goalkeeper':'Player '+i))}">
-      <button class="pick-btn" title="Pick from squad" onclick="onPickBtn(event,this,${i},'starter')">👤</button>
-      <input type="number" min="1" max="99" value="${saved[i]?.num || (i+1)}">`;
-    list.appendChild(row);
-    if (saved[i]?.squadId) lockRow(row);
-  }
-  attachLiveRender('#playerList');
-}
-
-function buildSubList() {
-  const list  = document.getElementById('subList');
-  const saved = readRows('#subList');
-  list.innerHTML = '';
-  for (let i = 0; i < subCount; i++) {
-    const row = document.createElement('div');
-    row.className = 'player-row';
-    row.dataset.squadId = saved[i]?.squadId || '';
-    row.innerHTML = `
-      <span class="num" style="color:#f39c12;">${i+1}</span>
-      <input type="text"   value="${esc(saved[i]?.name || 'Sub '+(i+1))}">
-      <button class="pick-btn" title="Pick from squad" onclick="onPickBtn(event,this,${i},'sub')">👤</button>
-      <input type="number" min="1" max="99" value="${saved[i]?.num || (outfieldCount+2+i)}">`;
-    list.appendChild(row);
-    if (saved[i]?.squadId) lockRow(row);
-  }
-  attachLiveRender('#subList');
-}
-
-function readRows(sel) {
-  return [...document.querySelectorAll(sel + ' .player-row')].map(r => ({
-    name:    r.querySelector('input[type=text]').value,
-    num:     r.querySelector('input[type=number]').value,
-    squadId: r.dataset.squadId || '',
-  }));
-}
-
-function attachLiveRender(sel) {
-  document.querySelectorAll(sel + ' input').forEach(i => i.addEventListener('input', render));
-}
-
-function getPlayers() {
-  return [...document.querySelectorAll('#playerList .player-row')].map((row, i) => ({
-    isGK:   i === 0,
-    name:   row.querySelector('input[type=text]').value   || (i===0?'GK':'P'+i),
-    number: row.querySelector('input[type=number]').value || (i+1),
-  }));
-}
-
-function getSubs() {
-  return [...document.querySelectorAll('#subList .player-row')].map((row, i) => ({
-    name:   row.querySelector('input[type=text]').value   || 'Sub'+(i+1),
-    number: row.querySelector('input[type=number]').value || (outfieldCount+2+i),
-  }));
-}
-
-// ── BADGE ─────────────────────────────────────────────────────────────────
-function loadBadge(input) {
-  if (!input.files || !input.files[0]) return;
-  const url = URL.createObjectURL(input.files[0]);
-  const img = new Image();
-  img.onload = () => {
-    badgeImg = img;
-    document.getElementById('badgePreview').src = url;
-    document.getElementById('badgePreview').style.display = 'block';
-    document.getElementById('clearBadgeBtn').style.display = '';
-    render();
-  };
-  img.src = url;
-}
-
-function clearBadge() {
-  badgeImg = null;
-  document.getElementById('badgePreview').style.display = 'none';
-  document.getElementById('badgePreview').src = '';
-  document.getElementById('clearBadgeBtn').style.display = 'none';
-  document.getElementById('badgeFile').value = '';
-  render();
-}
-
-// ── SHARE LINK ────────────────────────────────────────────────────────────
-function getShareState() {
-  return {
-    t:  document.getElementById('teamName').value,
-    jc: document.getElementById('jerseyColor').value,
-    nc: document.getElementById('numberColor').value,
-    sc: document.getElementById('shortsColor').value,
-    gk: document.getElementById('gkColor').value,
-    kp: document.getElementById('kitPattern').value,
-    pc: document.getElementById('patternColor').value,
-    pt: pitchType,
-    oc: outfieldCount,
-    fm: currentFormation,
-    pl: readRows('#playerList'),
-    sb: readRows('#subList'),
-    sn: subCount,
-    cn: document.getElementById('coachName').value,
-    cc: document.getElementById('coachColor').value,
-    ci: document.getElementById('coachInitials').value,
-    an: document.getElementById('asstCoachName').value,
-    ac: document.getElementById('asstColor').value,
-    ai: document.getElementById('asstInitials').value,
-    opp: document.getElementById('showOpponent').checked,
-    on: document.getElementById('oppName').value,
-    oj: document.getElementById('oppJerseyColor').value,
-    onu: document.getElementById('oppNumberColor').value,
-    os: document.getElementById('oppShortsColor').value,
-    of: oppFormation,
-    cp: customPositions,
-  };
-}
-
-function copyShareLink() {
-  const state   = getShareState();
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
-  const url     = location.href.split('#')[0] + '#' + encoded;
-  navigator.clipboard.writeText(url).then(() => {
-    showToast('Link copied!');
-  }).catch(() => {
-    prompt('Copy this link:', url);
-  });
-}
-
-function showToast(msg) {
-  const el = document.getElementById('shareToast');
-  el.textContent = msg;
-  setTimeout(() => { el.textContent = ''; }, 3000);
-}
-
-function loadFromHash() {
-  const hash = location.hash.slice(1);
-  if (!hash) return;
-  try {
-    const s = JSON.parse(decodeURIComponent(escape(atob(hash))));
-    const sv = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
-    sv('teamName', s.t); sv('jerseyColor', s.jc); sv('numberColor', s.nc);
-    sv('shortsColor', s.sc); sv('gkColor', s.gk);
-    sv('kitPattern', s.kp); sv('patternColor', s.pc);
-    if (s.pt) { pitchType = s.pt; document.querySelectorAll('.pitch-btn').forEach(b => { b.classList.toggle('active', b.textContent.trim().toLowerCase().includes(s.pt)); }); }
-    if (s.oc) { outfieldCount = parseInt(s.oc); document.getElementById('outfieldSlider').value = s.oc; document.getElementById('outfieldCount').textContent = s.oc; }
-    if (s.sn) { subCount = parseInt(s.sn); document.getElementById('subSlider').value = s.sn; document.getElementById('subCountLabel').textContent = s.sn; }
-    buildFormationButtons();
-    if (s.fm) { currentFormation = s.fm; document.querySelectorAll('.formation-btn').forEach(b => b.classList.toggle('active', b.textContent.trim() === s.fm)); }
-    buildPlayerList();
-    buildSubList();
-    // restore player data
-    if (s.pl) {
-      const rows = document.querySelectorAll('#playerList .player-row');
-      s.pl.forEach((p, i) => { if (rows[i]) { rows[i].querySelector('input[type=text]').value = p.name||''; rows[i].querySelector('input[type=number]').value = p.num||''; } });
-    }
-    if (s.sb) {
-      const rows = document.querySelectorAll('#subList .player-row');
-      s.sb.forEach((p, i) => { if (rows[i]) { rows[i].querySelector('input[type=text]').value = p.name||''; rows[i].querySelector('input[type=number]').value = p.num||''; } });
-    }
-    sv('coachName', s.cn); sv('coachColor', s.cc); sv('coachInitials', s.ci);
-    sv('asstCoachName', s.an); sv('asstColor', s.ac); sv('asstInitials', s.ai);
-    if (s.opp) {
-      document.getElementById('showOpponent').checked = true;
-      document.getElementById('opponentSection').style.display = '';
-    }
-    sv('oppName', s.on); sv('oppJerseyColor', s.oj); sv('oppNumberColor', s.onu); sv('oppShortsColor', s.os);
-    if (s.of) { oppFormation = s.of; sv('oppFormInput', s.of); }
-    if (s.cp) customPositions = s.cp;
-  } catch(e) { /* invalid hash */ }
-}
-
-// ── CANVAS SETUP ──────────────────────────────────────────────────────────
-const canvas = document.getElementById('pitchCanvas');
-const ctx    = canvas.getContext('2d');
-
-function rrPath(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
-  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
-  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
-  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
-  ctx.closePath();
-}
-function rrFill(x,y,w,h,r){ rrPath(x,y,w,h,r); ctx.fill(); }
-
-function lighten(hex, amt) {
-  const n=parseInt(hex.replace('#',''),16);
-  return `rgb(${Math.min(255,(n>>16)+amt)},${Math.min(255,((n>>8)&0xff)+amt)},${Math.min(255,(n&0xff)+amt)})`;
-}
-function darken(hex, amt) {
-  const n=parseInt(hex.replace('#',''),16);
-  return `rgb(${Math.max(0,(n>>16)-amt)},${Math.max(0,((n>>8)&0xff)-amt)},${Math.max(0,(n&0xff)-amt)})`;
-}
-
-// ── RENDER ────────────────────────────────────────────────────────────────
-function render() {
-  const L = computeLayout();
-  canvas.width  = L.W;
-  canvas.height = L.H;
-
-  ctx.clearRect(0, 0, L.W, L.H);
-  ctx.save();
-  rrPath(0, 0, L.W, L.H, 12); ctx.clip();
-  ctx.fillStyle = '#141428'; ctx.fillRect(0, 0, L.W, L.H);
-
-  // pitch surface clip
-  ctx.save();
-  ctx.beginPath(); ctx.rect(0, L.PT-4, L.W, (L.dual ? L.PH*2 : L.PH)+8); ctx.clip();
-  drawSurface(L);
-  ctx.restore();
-
-  drawBenchBg(L);
-  drawMarkings(L);
-  placePlayersOnPitch(L);
-  drawBench(L);
-  drawTeamLabel(L);
-  if (badgeImg) drawBadge(L);
-  ctx.restore();
-  checkWarnings();
-}
-
-// ── SURFACES ──────────────────────────────────────────────────────────────
-function drawSurface(L) {
-  if (pitchType === 'grass') {
-    for (let i=0;i<8;i++) {
-      ctx.fillStyle = i%2===0 ? '#2a7825' : '#2f8c2a';
-      ctx.fillRect(i*(L.W/8), 0, L.W/8, L.H);
-    }
-  } else if (pitchType === 'hard') {
-    ctx.fillStyle='#2e5280'; ctx.fillRect(0,0,L.W,L.H);
-    ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
-    for(let y=0;y<L.H;y+=12){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(L.W,y);ctx.stroke();}
-    for(let x=0;x<L.W;x+=12){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,L.H);ctx.stroke();}
-  } else {
-    ctx.fillStyle='#b07830'; ctx.fillRect(0,0,L.W,L.H);
-    for(let row=0;row<L.H/18+1;row++) for(let col=0;col<L.W/60+1;col++){
-      const off=(row%2)*30;
-      ctx.fillStyle=row%2===0?(col%2===0?'#be8838':'#b07830'):(col%2===0?'#a87028':'#b07830');
-      ctx.fillRect(col*60-off, row*18, 59, 17);
-    }
-  }
-}
-
-function drawBenchBg(L) {
-  ctx.fillStyle = {grass:'#162a14',hard:'#1e3050',indoor:'#6a4818'}[pitchType];
-  ctx.fillRect(0, L.BT-4, L.W, L.H-L.BT+4);
-  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
-  ctx.setLineDash([6,5]);
-  ctx.beginPath(); ctx.moveTo(L.PP, L.BT-4); ctx.lineTo(L.W-L.PP, L.BT-4); ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-// ── MARKINGS ──────────────────────────────────────────────────────────────
-function drawMarkings(L) {
-  const { W, PP, PW, PH, PT, PB, ARC_R, GOAL_W, GOAL_D, dual, MID_Y } = L;
-
-  ctx.strokeStyle='rgba(255,255,255,0.88)'; ctx.lineWidth=2;
-
-  if (dual) {
-    // Full pitch border
-    ctx.strokeRect(PP, PT, PW, PH*2);
-    // Halfway line
-    ctx.beginPath(); ctx.moveTo(PP, MID_Y); ctx.lineTo(PP+PW, MID_Y); ctx.stroke();
-    // Centre circle
-    ctx.beginPath(); ctx.arc(W/2, MID_Y, ARC_R, 0, Math.PI*2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(W/2, MID_Y, 4, 0, Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.88)'; ctx.fill();
-
-    // Our half markings (bottom)
-    drawHalfMarkings(L, MID_Y, PT+PH*2, false);
-    // Opponent half markings (top, inverted)
-    drawHalfMarkings(L, PT, MID_Y, true);
-
-    // Our goal (bottom)
-    drawGoal(L, PT+PH*2, false);
-    // Opponent goal (top, inverted)
-    drawGoal(L, PT, true);
-
-    // Labels
-    ctx.save();
-    ctx.fillStyle='rgba(255,255,255,0.28)'; ctx.font='10px Segoe UI';
-    ctx.textAlign='left'; ctx.textBaseline='bottom';
-    ctx.fillText(document.getElementById('oppName').value || 'Opponent', PP+5, MID_Y-3);
-    ctx.textBaseline='top';
-    ctx.fillText(document.getElementById('teamName').value || 'My Team', PP+5, MID_Y+3);
-    ctx.restore();
-  } else {
-    // Half pitch
-    ctx.strokeRect(PP, PT, PW, PH);
-    ctx.save();
-    ctx.fillStyle='rgba(255,255,255,0.28)'; ctx.font='10px Segoe UI';
-    ctx.textAlign='left'; ctx.textBaseline='bottom';
-    ctx.fillText('HALFWAY LINE', PP+5, PT-3);
-    ctx.restore();
-    // Centre arc (half visible)
-    ctx.beginPath(); ctx.arc(W/2, PT, ARC_R, 0, Math.PI); ctx.stroke();
-    ctx.beginPath(); ctx.arc(W/2, PT, 4, 0, Math.PI*2);
-    ctx.fillStyle='rgba(255,255,255,0.88)'; ctx.fill();
-    drawHalfMarkings(L, PT, PB, false);
-    drawGoal(L, PB, false);
-  }
-}
-
-function drawHalfMarkings(L, topY, botY, inverted) {
-  const { PP, PW, ARC_R } = L;
-  const halfH = botY - topY;
-  const W     = L.W;
-
-  ctx.strokeStyle='rgba(255,255,255,0.88)'; ctx.lineWidth=2;
-
-  const goalLineY = inverted ? topY : botY;
-
-  // Penalty area
-  const penW = PW*0.57, penH = halfH*0.31;
-  const penX = PP+(PW-penW)/2;
-  const penTop = inverted ? goalLineY : goalLineY - penH;
-  ctx.strokeRect(penX, penTop, penW, inverted ? penH : penH);
-
-  // Goal box
-  const gboxW = PW*0.27, gboxH = halfH*0.09;
-  const gboxTop = inverted ? goalLineY : goalLineY - gboxH;
-  ctx.strokeRect(PP+(PW-gboxW)/2, gboxTop, gboxW, gboxH);
-
-  // Penalty spot
-  const psY = inverted ? goalLineY + halfH*0.21 : goalLineY - halfH*0.21;
-  ctx.beginPath(); ctx.arc(W/2, psY, 3.5, 0, Math.PI*2);
-  ctx.fillStyle='rgba(255,255,255,0.88)'; ctx.fill();
-
-  // Penalty arc (clipped to exclude penalty area)
-  const arcClipTop = inverted ? penTop + penH : topY;
-  const arcClipBot = inverted ? botY          : penTop;
-  ctx.save();
-  ctx.beginPath(); ctx.rect(PP, arcClipTop, PW, arcClipBot - arcClipTop); ctx.clip();
-  ctx.beginPath(); ctx.arc(W/2, psY, ARC_R, 0, Math.PI*2);
-  ctx.strokeStyle='rgba(255,255,255,0.88)'; ctx.lineWidth=2;
-  ctx.stroke();
-  ctx.restore();
-
-  // Corner arcs
-  const cr=11;
-  if (inverted) {
-    ctx.beginPath(); ctx.arc(PP,    topY, cr, Math.PI*1.5, Math.PI*2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(PP+PW, topY, cr, Math.PI,     Math.PI*1.5); ctx.stroke();
-  } else {
-    ctx.beginPath(); ctx.arc(PP,    botY, cr, Math.PI*1.5, Math.PI*2); ctx.stroke();
-    ctx.beginPath(); ctx.arc(PP+PW, botY, cr, Math.PI,     Math.PI*1.5); ctx.stroke();
-  }
-}
-
-function drawGoal(L, lineY, inverted) {
-  const { W, GOAL_W, GOAL_D } = L;
-  const gx = W/2 - GOAL_W/2;
-  const netY  = inverted ? lineY - GOAL_D : lineY;
-  const netDir = inverted ? -1 : 1;
-
-  ctx.fillStyle='rgba(255,255,255,0.07)';
-  ctx.fillRect(gx+3, netY, GOAL_W-6, GOAL_D * netDir);
-
-  ctx.strokeStyle='rgba(255,255,255,0.22)'; ctx.lineWidth=0.6;
-  for(let nx=gx+10;nx<gx+GOAL_W-3;nx+=10){
-    ctx.beginPath(); ctx.moveTo(nx, netY); ctx.lineTo(nx, netY+GOAL_D*netDir); ctx.stroke();
-  }
-  for(let nd=6;nd<GOAL_D;nd+=6){
-    const ny = netY + nd * netDir;
-    ctx.beginPath(); ctx.moveTo(gx+3,ny); ctx.lineTo(gx+GOAL_W-3,ny); ctx.stroke();
-  }
-
-  const postY = inverted ? lineY - GOAL_D - 4 : lineY - 4;
-  ctx.fillStyle='#efefef';
-  ctx.fillRect(gx-3, postY, GOAL_W+6, 5);
-  ctx.fillRect(gx-3, postY, 5, GOAL_D+4);
-  ctx.fillRect(gx+GOAL_W-2, postY, 5, GOAL_D+4);
-}
-
-// ── PLAYER POSITIONS ──────────────────────────────────────────────────────
-function getPositions(formation, halfTop, halfH, inverted) {
-  const W  = 640;
-  const PP = 28;
-  const PW = W - PP * 2;
-  const lines = formation.split('-').map(Number);
-  const lc    = lines.length;
-  const pos   = [];
-
-  const gkFrac  = inverted ? 0.10 : 0.86;
-  const defFrac = inverted ? 0.26 : 0.64;  // line closest to own GK
-  const range   = 0.54;
-
-  pos.push({ x: W/2, y: halfTop + halfH * gkFrac });
-  lines.forEach((count, li) => {
-    // not inverted: defense at 0.64, attack at 0.64-0.54=0.10
-    // inverted:     defense at 0.26, attack at 0.26+0.54=0.80
-    const frac = inverted
-      ? defFrac + (li / Math.max(lc-1, 1)) * range
-      : defFrac - (li / Math.max(lc-1, 1)) * range;
-    const y = halfTop + halfH * frac;
-    for (let p=0; p<count; p++)
-      pos.push({ x: PP + PW*(p+1)/(count+1), y });
-  });
-  return pos;
-}
-
-// ── JERSEY ────────────────────────────────────────────────────────────────
-function drawJersey(cx, cy, number, name, jColor, nColor, sColor, isGK, size, showNameOnShirt, pattern, patternCol) {
-  const base  = jColor;
-  const sBase = isGK ? darken(jColor, 45) : sColor;
-
-  const w      = size * 1.9;
-  const h      = size * 2.3;
-  const t      = cy - h * 0.44;
-  const b      = cy + h * 0.56;
-  const hw     = w / 2;
-  const cw2    = hw * 0.28;
-  const cd     = h * 0.14;
-  const slvX   = hw * 0.20;
-  const slvY   = t + h * 0.28;
-  const tap    = hw * 0.04;
-  const shortsH = size * 1.4;
-
-  ctx.save();
-
-  // shadow
-  ctx.beginPath();
-  ctx.ellipse(cx, b+shortsH+3, hw*0.85, 4, 0, 0, Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.fill();
-
-  // shorts
-  rrPath(cx-hw+tap, b-1, w-tap*2, shortsH+1, 2);
-  ctx.fillStyle=sBase; ctx.fill();
-  ctx.strokeStyle='rgba(0,0,0,0.25)'; ctx.lineWidth=0.7; ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx,b); ctx.lineTo(cx,b+shortsH);
-  ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=0.6; ctx.stroke();
-
-  // jersey body path (reusable)
-  function jerseyBodyPath() {
-    ctx.beginPath();
-    ctx.moveTo(cx-cw2, t);
-    ctx.lineTo(cx-hw-slvX, t+h*0.04);
-    ctx.lineTo(cx-hw-slvX, slvY);
-    ctx.lineTo(cx-hw,      slvY+h*0.06);
-    ctx.lineTo(cx-hw+tap,  b);
-    ctx.lineTo(cx+hw-tap,  b);
-    ctx.lineTo(cx+hw,      slvY+h*0.06);
-    ctx.lineTo(cx+hw+slvX, slvY);
-    ctx.lineTo(cx+hw+slvX, t+h*0.04);
-    ctx.lineTo(cx+cw2,     t);
-    ctx.lineTo(cx,         t+cd);
-    ctx.closePath();
-  }
-
-  // fill jersey
-  jerseyBodyPath();
-  const grad = ctx.createLinearGradient(cx-hw, t, cx+hw, b);
-  grad.addColorStop(0,    lighten(base, 22));
-  grad.addColorStop(0.45, base);
-  grad.addColorStop(1,    lighten(base, 8));
-  ctx.fillStyle=grad; ctx.fill();
-  ctx.strokeStyle='rgba(0,0,0,0.3)'; ctx.lineWidth=0.8; ctx.stroke();
-
-  // kit pattern overlay
-  if (pattern && pattern !== 'plain' && patternCol) {
-    ctx.save();
-    jerseyBodyPath();
-    ctx.clip();
-    ctx.globalAlpha = 0.55;
-    ctx.fillStyle = patternCol;
-
-    if (pattern === 'vstripes') {
-      const strW = w * 0.22;
-      for (let sx = cx - hw - slvX; sx < cx + hw + slvX + strW; sx += strW * 2) {
-        ctx.fillRect(sx, t, strW, h + shortsH);
-      }
-    } else if (pattern === 'hoops') {
-      const bandH = h * 0.22;
-      for (let sy = t; sy < b + bandH; sy += bandH * 2) {
-        ctx.fillRect(cx - hw - slvX, sy, w + slvX*2, bandH);
-      }
-    } else if (pattern === 'sash') {
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(-0.55);
-      ctx.fillRect(-hw*2, -size*0.45, hw*4, size*0.90);
-      ctx.restore();
-    } else if (pattern === 'halves') {
-      ctx.fillRect(cx, t, hw + slvX, h + shortsH);
-    } else if (pattern === 'sleeves') {
-      ctx.fillRect(cx-hw-slvX, t, slvX+hw*0.35, h*0.35);
-      ctx.fillRect(cx+hw*0.65, t, slvX+hw*0.35, h*0.35);
-    }
-
-    ctx.restore();
-  }
-
-  // collar
-  ctx.beginPath();
-  ctx.moveTo(cx-cw2,t); ctx.lineTo(cx+cw2,t); ctx.lineTo(cx,t+cd);
-  ctx.closePath(); ctx.fillStyle=darken(base,30); ctx.fill();
-
-  // sleeve edge
-  ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(cx-hw-slvX+1,t+h*0.06); ctx.lineTo(cx-hw-slvX+1,slvY-1); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx+hw+slvX-1,t+h*0.06); ctx.lineTo(cx+hw+slvX-1,slvY-1); ctx.stroke();
-
-  // text
-  ctx.fillStyle=nColor; ctx.textAlign='center';
-
-  if (showNameOnShirt) {
-    const lastName = name.trim().split(/\s+/).pop().toUpperCase();
-    const bodyW    = (w - tap*2) * 0.86;
-    let nfs = Math.max(5, size * 0.44);
-    ctx.font = `bold ${nfs}px Segoe UI`;
-    while (ctx.measureText(lastName).width > bodyW && nfs > 5) {
-      nfs -= 0.3;
-      ctx.font = `bold ${nfs}px Segoe UI`;
-    }
-    ctx.textBaseline='middle';
-    ctx.fillText(lastName, cx, cy - size*0.30);
-    ctx.font = `bold ${Math.max(8, Math.round(size*0.80))}px Segoe UI`;
-    ctx.fillText(String(number), cx, cy + size*0.40);
-  } else {
-    ctx.font = `bold ${Math.max(7, Math.round(size*0.78))}px Segoe UI`;
-    ctx.textBaseline='middle';
-    ctx.fillText(String(number), cx, cy);
-  }
-
-  ctx.restore();
-}
-
-// ── PLACE PLAYERS ON PITCH ────────────────────────────────────────────────
-function placePlayersOnPitch(L) {
-  const players    = getPlayers();
-  const formation  = currentFormation || '4-3-3';
-  const jColor     = document.getElementById('jerseyColor').value;
-  const gkColor    = document.getElementById('gkColor').value;
-  const nColor     = document.getElementById('numberColor').value;
-  const sColor     = document.getElementById('shortsColor').value;
-  const pattern    = document.getElementById('kitPattern').value;
-  const patternCol = document.getElementById('patternColor').value;
-
-  let halfTop, halfH;
-  if (L.dual) {
-    halfTop = L.MID_Y;
-    halfH   = L.PH;
-  } else {
-    halfTop = L.PT;
-    halfH   = L.PH;
-  }
-
-  const defaultPositions = getPositions(formation, halfTop, halfH, false);
-  lastPositions = [];
-
-  players.forEach((p, i) => {
-    const def = defaultPositions[i];
-    if (!def) return;
-    const pos = customPositions[i] ? customPositions[i] : def;
-    lastPositions[i] = { x: pos.x, y: pos.y };
-    const jerseyC = p.isGK ? gkColor : jColor;
-    drawJersey(pos.x, pos.y, p.number, p.name, jerseyC, nColor, sColor, p.isGK, L.FIELD_SIZE, true, p.isGK ? null : pattern, patternCol);
-  });
-
-  // Opponent team
-  if (L.dual) {
-    const oppJ  = document.getElementById('oppJerseyColor').value;
-    const oppN  = document.getElementById('oppNumberColor').value;
-    const oppS  = document.getElementById('oppShortsColor').value;
-    const oppFm = oppFormation || (FORMATIONS[outfieldCount] || [['4-3-3']])[0][0];
-    const oppPositions = getPositions(oppFm, L.PT, L.PH, true);
-    for (let i = 0; i < Math.min(oppPositions.length, outfieldCount + 1); i++) {
-      const isGK = i === 0;
-      const oppGK = isGK ? darken(oppJ, 45) : oppJ;
-      drawJersey(oppPositions[i].x, oppPositions[i].y, i+1, '', isGK ? oppGK : oppJ, oppN, oppS, isGK, L.FIELD_SIZE, false, null, null);
-    }
-  }
-}
-
-// ── BENCH ──────────────────────────────────────────────────────────────────
-function drawBench(L) {
-  const coachName  = document.getElementById('coachName').value     || 'Coach';
-  const asstName   = document.getElementById('asstCoachName').value  || 'Asst.';
-  const coachColor = document.getElementById('coachColor').value;
-  const asstColor  = document.getElementById('asstColor').value;
-  const coachInit  = (document.getElementById('coachInitials').value || 'HC').toUpperCase();
-  const asstInit   = (document.getElementById('asstInitials').value  || 'AC').toUpperCase();
-  const subs       = getSubs();
-  const jColor     = document.getElementById('jerseyColor').value;
-  const nColor     = document.getElementById('numberColor').value;
-  const sColor     = document.getElementById('shortsColor').value;
-  const { PP, PW, BT, SEAT_Y, SEAT_H, LEG_H, NAME_Y } = L;
-
-  ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font='bold 11px Segoe UI';
-  ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.fillText('BENCH', PP, BT+6);
-
-  const sx=PP+12, sw=PW-24;
-  ctx.fillStyle = pitchType==='indoor' ? '#8B6520' : '#5a5a5a';
-  rrPath(sx, SEAT_Y, sw, SEAT_H, 3); ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1; ctx.stroke();
-  [0.12,0.38,0.62,0.88].forEach(f => {
-    ctx.fillStyle='#404040';
-    ctx.fillRect(sx+sw*f-2, SEAT_Y+SEAT_H, 4, LEG_H);
-  });
-
-  const all = [
-    { name:coachName, number:coachInit, color:coachColor, nColor:'#fff' },
-    ...subs.map(s => ({ name:s.name, number:s.number, color:jColor, nColor })),
-    { name:asstName,  number:asstInit,  color:asstColor,  nColor:'#fff' },
-  ];
-
-  const N    = all.length;
-  const size = Math.min(18, Math.max(10, (sw-10) / (N * 3.0)));
-  const cy   = SEAT_Y - (size*1.288 + size*1.4 + 3);
-
-  all.forEach((p, i) => {
-    const x = PP + PW*(i+1)/(N+1);
-    drawJersey(x, cy, p.number, p.name, p.color, p.nColor, sColor, false, size, false, null, null);
-  });
-
-  ctx.font='bold 10px Segoe UI'; ctx.textBaseline='top';
-  all.forEach((p, i) => {
-    const x   = PP + PW*(i+1)/(N+1);
-    const lbl = p.name.length>9 ? p.name.slice(0,8)+'.' : p.name;
-    ctx.textAlign='center';
-    ctx.fillStyle=(p.color===coachColor||p.color===asstColor) ? p.color : 'rgba(255,255,255,0.65)';
-    ctx.fillText(lbl, x, NAME_Y);
-  });
-}
-
-// ── TEAM LABEL ────────────────────────────────────────────────────────────
-function drawTeamLabel(L) {
-  const name      = document.getElementById('teamName').value || 'My Team';
-  const formation = currentFormation || '4-3-3';
-  const label     = `${name}  ·  ${formation}`;
-  ctx.font='bold 15px Segoe UI'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  const tw=ctx.measureText(label).width+24;
-  ctx.fillStyle='rgba(0,0,0,0.55)'; rrFill(L.W/2-tw/2, 9, tw, 24, 6);
-  ctx.fillStyle='#fff'; ctx.fillText(label, L.W/2, 21);
-}
-
-// ── CLUB BADGE ─────────────────────────────────────────────────────────────
-function drawBadge(L) {
-  const bSize = 52;
-  const bx    = L.PP + 8;
-  const by    = L.dual ? L.MID_Y + 8 : L.PT + 8;
-  ctx.save();
-  rrPath(bx-2, by-2, bSize+4, bSize+4, 6);
-  ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.fill();
-  rrPath(bx, by, bSize, bSize, 5);
-  ctx.clip();
-  ctx.drawImage(badgeImg, bx, by, bSize, bSize);
-  ctx.restore();
-}
-
-// ── DRAG & DROP ───────────────────────────────────────────────────────────
-function getCanvasPos(e) {
-  const rect  = canvas.getBoundingClientRect();
-  const scaleX = canvas.width  / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const src = e.touches ? e.touches[0] : e;
-  return {
-    x: (src.clientX - rect.left)  * scaleX,
-    y: (src.clientY - rect.top)   * scaleY,
-  };
-}
-
-function hitTestPlayer(px, py) {
-  const L    = computeLayout();
-  const size = L.FIELD_SIZE;
-  for (let i = 0; i < lastPositions.length; i++) {
-    const p = lastPositions[i];
-    if (!p) continue;
-    const dx = px - p.x, dy = py - p.y;
-    if (Math.sqrt(dx*dx + dy*dy) < size * 2.0) return i;
-  }
-  return -1;
-}
-
-function onPointerDown(e) {
-  const { x, y } = getCanvasPos(e);
-  const idx = hitTestPlayer(x, y);
-  if (idx < 0) return;
-  e.preventDefault();
-  dragState = { idx };
-  canvas.style.cursor = 'grabbing';
-}
-
-function onPointerMove(e) {
-  if (!dragState) return;
-  e.preventDefault();
-  const { x, y } = getCanvasPos(e);
-  const L = computeLayout();
-  // Clamp within pitch area
-  const clampX = Math.max(L.PP + 10, Math.min(L.PP + L.PW - 10, x));
-  const pitchTop  = L.dual ? L.MID_Y + 5 : L.PT + 5;
-  const pitchBot  = L.dual ? L.PT + L.PH*2 - 5 : L.PT + L.PH - 5;
-  const clampY = Math.max(pitchTop, Math.min(pitchBot, y));
-  customPositions[dragState.idx] = { x: clampX, y: clampY };
-  render();
-}
-
-function onPointerUp(e) {
-  if (!dragState) return;
-  dragState = null;
-  canvas.style.cursor = 'default';
-}
-
-canvas.addEventListener('mousedown',  onPointerDown);
-canvas.addEventListener('mousemove',  onPointerMove);
-canvas.addEventListener('mouseup',    onPointerUp);
-canvas.addEventListener('mouseleave', onPointerUp);
-canvas.addEventListener('touchstart', onPointerDown, { passive: false });
-canvas.addEventListener('touchmove',  onPointerMove, { passive: false });
-canvas.addEventListener('touchend',   onPointerUp);
-
-// ── EXPORT ────────────────────────────────────────────────────────────────
-function exportPNG() {
-  render();
-  const a=document.createElement('a');
-  a.download=(document.getElementById('teamName').value||'lineup')+'.png';
-  a.href=canvas.toDataURL('image/png'); a.click();
-}
-
-// ── SQUAD ─────────────────────────────────────────────────────────────────
-const SQUAD_KEY = 'flc_squad';
-let squad       = [];
-let squadSearch = '';
-let editingId   = null;
-let pickTarget  = null; // { rowEl }
-
-const POSITIONS   = ['GK','CB','LB','RB','LWB','RWB','CDM','CM','CAM','LM','RM','LW','RW','ST','CF'];
-const TYPE_ABBR   = { Goalkeeper:'GK', Defender:'DEF', Midfielder:'MID', Attacker:'ATT', Utility:'UTL' };
-const TYPE_COLOR  = { Goalkeeper:'#e8a020', Defender:'#5b9bd5', Midfielder:'#2ecc71', Attacker:'#e94560', Utility:'#9b59b6' };
-
-function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-function saveSquad() { localStorage.setItem(SQUAD_KEY, JSON.stringify(squad)); }
-function loadSquad() {
-  try { const s = localStorage.getItem(SQUAD_KEY); if (s) squad = JSON.parse(s); } catch(e) { squad = []; }
-  renderSquadList();
-}
-
-function getById(id) { return squad.find(p => p.id === id) || null; }
-
-function renderSquadList() {
-  const q   = squadSearch.toLowerCase();
-  const fil = squad.filter(p => !q || p.displayName.toLowerCase().includes(q) || String(p.shirtNumber||'').includes(q));
-  const cnt = document.getElementById('squadCount');
-  const active = squad.filter(p=>p.active).length;
-  cnt.textContent = squad.length ? `${squad.length} player${squad.length>1?'s':''} · ${active} active` : 'No players saved';
-
-  const list = document.getElementById('squadList');
-  if (!fil.length) {
-    list.innerHTML = `<div class="squad-empty">${squad.length ? 'No matches.' : 'No players yet — add your squad!'}</div>`;
-    return;
-  }
-  list.innerHTML = '';
-  fil.forEach(p => {
-    const tc = TYPE_COLOR[p.playerType] || '#888';
-    const ta = TYPE_ABBR[p.playerType]  || '—';
-    const d  = document.createElement('div');
-    d.className = 'squad-item' + (p.active ? '' : ' squad-item-inactive');
-    d.innerHTML = `
-      <span class="squad-item-num">#${esc(p.shirtNumber||'—')}</span>
-      <span class="squad-item-name" title="${esc(p.displayName)}">${esc(p.displayName)}</span>
-      <span class="squad-item-type" style="color:${tc}">${ta}</span>
-      <button class="sq-btn" title="${p.active?'Mark inactive':'Mark active'}" onclick="toggleActive('${p.id}')">${p.active?'🟢':'⚫'}</button>
-      <button class="sq-btn" title="Edit" onclick="openPlayerModal('${p.id}')">✏️</button>
-      <button class="sq-btn" title="Duplicate" onclick="dupPlayer('${p.id}')">⧉</button>
-      <button class="sq-btn del" title="Delete" onclick="delPlayer('${p.id}')">✕</button>`;
-    list.appendChild(d);
-  });
-}
-
-function toggleActive(id) {
-  const p = getById(id); if (!p) return;
-  p.active = !p.active; saveSquad(); renderSquadList(); checkWarnings();
-}
-function delPlayer(id) {
-  if (!confirm('Remove this player from the squad?')) return;
-  squad = squad.filter(p => p.id !== id); saveSquad(); renderSquadList(); checkWarnings();
-}
-function dupPlayer(id) {
-  const p = getById(id); if (!p) return;
-  squad.push({ ...p, id: genId(), displayName: p.displayName + ' (copy)' });
-  saveSquad(); renderSquadList();
-}
-
-// ── PLAYER MODAL ──────────────────────────────────────────────────────────
-function openPlayerModal(id) {
-  editingId = id || null;
-  const p   = id ? getById(id) : null;
-  document.getElementById('modalTitle').textContent = p ? 'Edit Player' : 'Add Player';
-  document.getElementById('mFirst').value   = p?.firstName   || '';
-  document.getElementById('mLast').value    = p?.lastName    || '';
-  const dn = document.getElementById('mDisplay');
-  dn.value = p?.displayName || ''; dn.dataset.m = p ? '1' : '';
-  document.getElementById('mShirt').value   = p?.shirtNumber || '';
-  document.getElementById('mType').value    = p?.playerType  || 'Midfielder';
-  document.getElementById('mFoot').value    = p?.strongFoot  || 'Right';
-  document.getElementById('mNotes').value   = p?.notes       || '';
-  document.getElementById('mActive').checked = p ? p.active  : true;
-  renderChips('mPref', p?.preferredPositions  || []);
-  renderChips('mSec',  p?.secondaryPositions  || []);
-  document.getElementById('playerModal').style.display = 'flex';
-}
-function closePlayerModal() {
-  document.getElementById('playerModal').style.display = 'none'; editingId = null;
-}
-function renderChips(containerId, selected) {
-  const el = document.getElementById(containerId);
-  el.innerHTML = '';
-  POSITIONS.forEach(pos => {
-    const c = document.createElement('div');
-    c.className = 'pos-chip' + (selected.includes(pos) ? ' sel' : '');
-    c.textContent = pos;
-    c.onclick = () => c.classList.toggle('sel');
-    el.appendChild(c);
-  });
-}
-function getChips(id) { return [...document.querySelectorAll(`#${id} .pos-chip.sel`)].map(c=>c.textContent); }
-function autoFillDisplay() {
-  const fn = document.getElementById('mFirst').value.trim();
-  const ln = document.getElementById('mLast').value.trim();
-  const dn = document.getElementById('mDisplay');
-  if (!dn.dataset.m) dn.value = [fn, ln].filter(Boolean).join(' ');
-}
-function savePlayerModal() {
-  const displayName = document.getElementById('mDisplay').value.trim() ||
-    [document.getElementById('mFirst').value.trim(), document.getElementById('mLast').value.trim()].filter(Boolean).join(' ') || 'Player';
-  const data = {
-    firstName: document.getElementById('mFirst').value.trim(),
-    lastName:  document.getElementById('mLast').value.trim(),
-    displayName,
-    shirtNumber:         document.getElementById('mShirt').value.trim(),
-    playerType:          document.getElementById('mType').value,
-    strongFoot:          document.getElementById('mFoot').value,
-    notes:               document.getElementById('mNotes').value.trim(),
-    active:              document.getElementById('mActive').checked,
-    preferredPositions:  getChips('mPref'),
-    secondaryPositions:  getChips('mSec'),
-  };
-  if (editingId) { const p = getById(editingId); if (p) Object.assign(p, data); }
-  else           { squad.push({ id: genId(), ...data }); }
-  saveSquad(); renderSquadList(); closePlayerModal(); checkWarnings();
-}
-
-// ── ROW LOCK / UNLOCK ─────────────────────────────────────────────────────
-function lockRow(row) {
-  row.classList.add('locked');
-  row.querySelector('input[type=text]').readOnly   = true;
-  row.querySelector('input[type=number]').readOnly = true;
-  const btn = row.querySelector('.pick-btn');
-  btn.textContent = '✕';
-  btn.title = 'Remove player';
-}
-
-function unlockRow(row) {
-  row.classList.remove('locked');
-  row.querySelector('input[type=text]').readOnly   = false;
-  row.querySelector('input[type=number]').readOnly = false;
-  const btn = row.querySelector('.pick-btn');
-  btn.textContent = '👤';
-  btn.title = 'Pick from squad';
-}
-
-function clearPick(row) {
-  row.dataset.squadId = '';
-  row.querySelector('input[type=text]').value  = '';
-  row.querySelector('input[type=number]').value = '';
-  unlockRow(row);
-  render();
-}
-
-// Unified button handler — picks if empty, clears if filled
-function onPickBtn(event, btn, rowIdx, slotType) {
-  event.stopPropagation();
-  const sel = slotType === 'starter' ? '#playerList' : '#subList';
-  const row = document.querySelectorAll(sel + ' .player-row')[rowIdx];
-  if (row.dataset.squadId) {
-    clearPick(row);
-  } else {
-    openPickDropdown(event, btn, rowIdx, slotType);
-  }
-}
-
-// ── PICK FROM SQUAD ───────────────────────────────────────────────────────
-function openPickDropdown(e, btn, rowIdx, slotType) {
-  e.stopPropagation();
-  const dd = document.getElementById('pickDropdown');
-  dd.style.display = 'none';
-  const activeSquad = squad.filter(p => p.active);
-  if (!activeSquad.length) { showToast('No active squad players. Add players in Squad Management.'); return; }
-  // (available filtering happens after pickTarget is set, below)
-
-  const sel  = slotType === 'starter' ? '#playerList' : '#subList';
-  pickTarget = document.querySelectorAll(sel + ' .player-row')[rowIdx];
-
-  // Collect squad IDs already used in other slots (not the current target slot)
-  const usedIds = new Set(
-    [...document.querySelectorAll('#playerList .player-row, #subList .player-row')]
-      .filter(r => r !== pickTarget && r.dataset.squadId)
-      .map(r => r.dataset.squadId)
-  );
-
-  const available = activeSquad.filter(p => !usedIds.has(p.id));
-
-  const list = document.getElementById('pickList');
-  list.innerHTML = '';
-
-  if (!available.length) {
-    list.innerHTML = '<div style="padding:10px 12px;font-size:0.78rem;color:#888;">All squad players are already in the lineup.</div>';
-    // still show dropdown so user sees the message
-  } else {
-    available.forEach(p => {
-      const tc = TYPE_COLOR[p.playerType] || '#888';
-      const ta = TYPE_ABBR[p.playerType]  || '';
-      const item = document.createElement('div');
-      item.className = 'pick-item';
-      item.innerHTML = `<span class="pick-num">#${esc(p.shirtNumber||'—')}</span><span style="flex:1">${esc(p.displayName)}</span><span class="pick-type" style="color:${tc}">${ta}</span>`;
-      item.onclick = (ev) => { ev.stopPropagation(); applyPick(p); };
-      list.appendChild(item);
-    });
-  }
-
-  // Position within viewport — fixed element uses viewport coords (no scrollY)
-  const r   = btn.getBoundingClientRect();
-  const ddH = Math.min(activeSquad.length * 38 + 8, 220);
-  const top = (r.bottom + 4 + ddH > window.innerHeight)
-    ? Math.max(4, r.top - ddH - 4)   // flip upward if not enough room below
-    : r.bottom + 4;
-  const left = Math.max(4, Math.min(r.left, window.innerWidth - 220));
-  dd.style.top  = top  + 'px';
-  dd.style.left = left + 'px';
-  dd.style.display = 'block';
-}
-function applyPick(p) {
-  if (!pickTarget) return;
-  pickTarget.querySelector('input[type=text]').value   = p.displayName;
-  pickTarget.querySelector('input[type=number]').value = p.shirtNumber || '';
-  pickTarget.dataset.squadId = p.id;
-  lockRow(pickTarget);
-  document.getElementById('pickDropdown').style.display = 'none';
-  pickTarget = null;
-  render();
-}
-document.addEventListener('click', () => {
-  const dd = document.getElementById('pickDropdown');
-  if (dd) dd.style.display = 'none';
-});
-
-// ── LINEUP WARNINGS ───────────────────────────────────────────────────────
-function checkWarnings() {
-  const issues    = [];
-  const shirtSeen = {};
-  const sqSeen    = {};
-
-  const check = (rows, label) => {
-    rows.forEach(row => {
-      const name  = row.querySelector('input[type=text]').value.trim();
-      const num   = row.querySelector('input[type=number]').value.trim();
-      const sqId  = row.dataset.squadId || '';
-      if (num) {
-        if (shirtSeen[num]) issues.push({ sev:'warn', msg:`Duplicate shirt #${num}` });
-        else shirtSeen[num] = true;
-      }
-      if (sqId) {
-        if (sqSeen[sqId]) issues.push({ sev:'error', msg:`${name || 'A player'} appears more than once` });
-        else sqSeen[sqId] = true;
-        const sp = getById(sqId);
-        if (sp && !sp.active) issues.push({ sev:'warn', msg:`${name} is marked inactive` });
-      }
-    });
-  };
-
-  check(document.querySelectorAll('#playerList .player-row'), 'starter');
-  check(document.querySelectorAll('#subList .player-row'),    'sub');
-
-  const container = document.getElementById('lineupWarnings');
-  if (!container) return;
-  container.innerHTML = '';
-  issues.forEach(iss => {
-    const d = document.createElement('div');
-    d.className = `w-item ${iss.sev}`;
-    d.innerHTML = `<span>${iss.sev === 'error' ? '🔴' : '⚠️'}</span>${esc(iss.msg)}`;
-    container.appendChild(d);
-  });
-}
-
-// ── STARTUP ───────────────────────────────────────────────────────────────
-loadSquad();
-buildFormationButtons();
-buildPlayerList();
-buildSubList();
-loadFromHash();
-render();
-
-[
-  'jerseyColor','numberColor','shortsColor','gkColor',
-  'teamName',
-  'coachName','coachColor','coachInitials',
-  'asstCoachName','asstColor','asstInitials',
-  'oppName','oppJerseyColor','oppNumberColor','oppShortsColor',
-].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', render);
-});
-document.getElementById('outfieldSlider').addEventListener('input', e => setOutfield(e.target.value));
-document.getElementById('subSlider').addEventListener('input', e => setSubCount(e.target.value));
-</script>
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/match.js"></script>
+<script src="js/squad.js"></script>
+<script src="js/lineup.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
