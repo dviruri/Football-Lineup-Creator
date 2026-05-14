@@ -9,8 +9,12 @@
 <body>
 
 <header>
+  <select id="langSelect" class="lang-select" onchange="setLanguage(this.value)">
+    <option value="en">EN</option>
+    <option value="he">HE</option>
+  </select>
   <h1>⚽ FOOTBALL LINEUP CREATOR</h1>
-  <p>Build your perfect lineup, visualize the pitch</p>
+  <p data-i18n="header.tagline">Build your perfect lineup, visualize the pitch</p>
 </header>
 
 <div class="app">
@@ -18,19 +22,19 @@
 
     <!-- MATCH SETUP -->
     <div class="section">
-      <h3>Match Setup</h3>
+      <h3 data-i18n="section.match">Match Setup</h3>
       <div id="matchMeta" class="match-meta" style="display:none;"></div>
-      <label>Match Title</label>
-      <input type="text" id="matchTitle" placeholder="e.g. U12 Cup Semi-Final" oninput="saveMatch()">
+      <label data-i18n="label.matchTitle">Match Title</label>
+      <input type="text" id="matchTitle" data-i18n-ph="ph.matchTitle" placeholder="e.g. U12 Cup Semi-Final" oninput="saveMatch()">
       <div class="match-field-row">
         <div>
-          <label>Date</label>
+          <label data-i18n="label.date">Date</label>
           <input type="date" id="matchDate" onchange="saveMatch()">
         </div>
         <div>
-          <label>Format</label>
+          <label data-i18n="label.format">Format</label>
           <select id="matchFormat" onchange="onMatchFormatChange()">
-            <option value="">— Any —</option>
+            <option value="" data-i18n="opt.anyFormat">— Any —</option>
             <option value="5v5">5v5</option>
             <option value="6v6">6v6</option>
             <option value="7v7">7v7</option>
@@ -40,104 +44,106 @@
           </select>
         </div>
       </div>
-      <label>Opponent</label>
-      <input type="text" id="matchOpponent" placeholder="Opponent team name" oninput="saveMatch();syncOppName()">
+      <label data-i18n="label.opponent">Opponent</label>
+      <input type="text" id="matchOpponent" data-i18n-ph="ph.opponent" placeholder="Opponent team name" oninput="saveMatch();syncOppName()">
       <div class="toggle-row" style="margin-top:-4px;margin-bottom:4px;">
-        <label style="color:#888;font-size:0.78rem;">Show opponent on pitch</label>
+        <label style="color:#888;font-size:0.78rem;" data-i18n="label.showOnPitch">Show opponent on pitch</label>
         <label class="toggle"><input type="checkbox" id="showOpponent" onchange="onOpponentToggle()"><span class="toggle-slider"></span></label>
       </div>
       <div id="opponentSection" style="display:none;margin-bottom:6px;">
-        <div class="color-row"><label>Jersey Color</label><input type="color" id="oppJerseyColor" value="#3498db"></div>
-        <div class="color-row"><label>Number Color</label><input type="color" id="oppNumberColor" value="#ffffff"></div>
-        <div class="color-row"><label>Shorts Color</label><input type="color" id="oppShortsColor" value="#1a252f"></div>
-        <label>Formation</label>
+        <div class="color-row"><label data-i18n="label.oppJersey">Jersey Color</label><input type="color" id="oppJerseyColor" value="#3498db"></div>
+        <div class="color-row"><label data-i18n="label.oppNumber">Number Color</label><input type="color" id="oppNumberColor" value="#ffffff"></div>
+        <div class="color-row"><label data-i18n="label.oppShorts">Shorts Color</label><input type="color" id="oppShortsColor" value="#1a252f"></div>
+        <label data-i18n="label.formation">Formation</label>
         <div class="custom-form-row" style="margin-top:0;">
           <input type="text" id="oppFormInput" placeholder="e.g. 4-3-3" value="4-3-3" oninput="onOppFormInput()">
-          <button class="apply-btn" onclick="applyOppFormation()">Apply</button>
+          <button class="apply-btn" data-i18n="btn.apply" onclick="applyOppFormation()">Apply</button>
         </div>
         <div class="form-msg" id="oppFormMsg"></div>
       </div>
-      <label>Venue</label>
-      <input type="text" id="matchVenue" placeholder="Stadium / pitch name" oninput="saveMatch()">
+      <label data-i18n="label.venue">Venue</label>
+      <input type="text" id="matchVenue" data-i18n-ph="ph.venue" placeholder="Stadium / pitch name" oninput="saveMatch()">
       <div class="match-field-row">
         <div>
-          <label>Duration (min)</label>
+          <label data-i18n="label.duration">Duration (min)</label>
           <input type="number" id="matchDuration" min="10" max="180" value="90" oninput="saveMatch()">
         </div>
         <div>
-          <label>Periods</label>
+          <label data-i18n="label.periods">Periods</label>
           <input type="number" id="matchPeriods" min="1" max="4" value="2" oninput="saveMatch()">
         </div>
       </div>
-      <label>Home / Away</label>
+      <label data-i18n="label.homeAway">Home / Away</label>
       <div class="ha-group">
-        <button class="ha-btn active" data-ha="home" onclick="setHA('home',this)">🏠 Home</button>
-        <button class="ha-btn" data-ha="away" onclick="setHA('away',this)">✈️ Away</button>
-        <button class="ha-btn" data-ha="neutral" onclick="setHA('neutral',this)">⚖️ Neutral</button>
+        <button class="ha-btn active" data-ha="home" data-i18n="btn.home" onclick="setHA('home',this)">🏠 Home</button>
+        <button class="ha-btn" data-ha="away" data-i18n="btn.away" onclick="setHA('away',this)">✈️ Away</button>
+        <button class="ha-btn" data-ha="neutral" data-i18n="btn.neutral" onclick="setHA('neutral',this)">⚖️ Neutral</button>
       </div>
-      <label>Pitch Surface</label>
+      <label data-i18n="label.pitchSurface">Pitch Surface</label>
       <div class="pitch-type-grid">
-        <button class="pitch-btn active" onclick="setPitch('grass',this)"><span class="icon">🌿</span>Grass</button>
-        <button class="pitch-btn" onclick="setPitch('hard',this)"><span class="icon">🏟️</span>Hard</button>
-        <button class="pitch-btn" onclick="setPitch('indoor',this)"><span class="icon">🏠</span>Indoor</button>
+        <button class="pitch-btn active" onclick="setPitch('grass',this)"><span class="icon">🌿</span><span data-i18n="btn.grass">Grass</span></button>
+        <button class="pitch-btn" onclick="setPitch('hard',this)"><span class="icon">🏟️</span><span data-i18n="btn.hard">Hard</span></button>
+        <button class="pitch-btn" onclick="setPitch('indoor',this)"><span class="icon">🏠</span><span data-i18n="btn.indoor">Indoor</span></button>
       </div>
-      <label>Notes</label>
-      <textarea id="matchNotes" class="match-textarea" placeholder="Tactical notes, reminders…" rows="3" oninput="saveMatch()"></textarea>
+      <label data-i18n="label.notes">Notes</label>
+      <textarea id="matchNotes" class="match-textarea" data-i18n-ph="ph.notes" placeholder="Tactical notes, reminders…" rows="3" oninput="saveMatch()"></textarea>
     </div>
 
     <!-- TEAM SETUP -->
     <div class="section">
-      <h3>Team Setup</h3>
-      <label>Team Name</label>
+      <h3 data-i18n="section.team">Team Setup</h3>
+      <label data-i18n="label.teamName">Team Name</label>
       <input type="text" id="teamName" value="My Team">
-      <div class="color-row"><label>Jersey Color</label><input type="color" id="jerseyColor" value="#e74c3c"></div>
-      <div class="color-row"><label>Number Color</label><input type="color" id="numberColor" value="#ffffff"></div>
-      <div class="color-row"><label>Shorts Color</label><input type="color" id="shortsColor" value="#2c3e50"></div>
-      <div class="color-row"><label>GK Jersey</label><input type="color" id="gkColor" value="#e8a020"></div>
+      <div class="color-row"><label data-i18n="label.jerseyColor">Jersey Color</label><input type="color" id="jerseyColor" value="#e74c3c"></div>
+      <div class="color-row"><label data-i18n="label.numberColor">Number Color</label><input type="color" id="numberColor" value="#ffffff"></div>
+      <div class="color-row"><label data-i18n="label.shortsColor">Shorts Color</label><input type="color" id="shortsColor" value="#2c3e50"></div>
+      <div class="color-row"><label data-i18n="label.gkJersey">GK Jersey</label><input type="color" id="gkColor" value="#e8a020"></div>
+      <div class="color-row"><label data-i18n="label.gkNumber">GK Number</label><input type="color" id="gkNumberColor" value="#1a1a2e"></div>
+      <div class="color-row"><label data-i18n="label.gkShorts">GK Shorts</label><input type="color" id="gkShortsColor" value="#1a1a2e"></div>
       <div class="staff-divider"></div>
-      <label>Kit Pattern</label>
+      <label data-i18n="label.kitPattern">Kit Pattern</label>
       <div class="pattern-row">
         <select id="kitPattern" onchange="render()">
-          <option value="plain">Plain</option>
-          <option value="vstripes">Vertical Stripes</option>
-          <option value="hoops">Hoops</option>
-          <option value="sash">Sash</option>
-          <option value="halves">Half &amp; Half</option>
-          <option value="sleeves">Sleeves</option>
+          <option value="plain" data-i18n="opt.plain">Plain</option>
+          <option value="vstripes" data-i18n="opt.vstripes">Vertical Stripes</option>
+          <option value="hoops" data-i18n="opt.hoops">Hoops</option>
+          <option value="sash" data-i18n="opt.sash">Sash</option>
+          <option value="halves" data-i18n="opt.halves">Half &amp; Half</option>
+          <option value="sleeves" data-i18n="opt.sleeves">Sleeves</option>
         </select>
         <input type="color" id="patternColor" value="#ffffff" style="flex-shrink:0;" oninput="render()">
       </div>
-      <label style="font-size:0.75rem;color:#888;">Pattern color shown over jersey</label>
+      <label style="font-size:0.75rem;color:#888;" data-i18n="label.patternHint">Pattern color shown over jersey</label>
       <div class="staff-divider"></div>
-      <label>Formation</label>
+      <label data-i18n="label.formation">Formation</label>
       <!-- outfieldSlider/Count kept hidden — driven by Match Format -->
       <span id="outfieldCount" style="display:none">10</span>
       <input type="range" id="outfieldSlider" min="4" max="10" value="10" style="display:none">
       <div class="formation-grid" id="formationGrid"></div>
-      <label style="margin-top:6px;">Custom formation</label>
+      <label style="margin-top:6px;" data-i18n="label.customForm">Custom formation</label>
       <div class="custom-form-row">
-        <input type="text" id="customFormInput" placeholder="e.g. 4-2-3-1" oninput="onCustomFormInput()">
-        <button class="apply-btn" onclick="applyCustomFormation()">Apply</button>
+        <input type="text" id="customFormInput" data-i18n-ph="ph.customForm" placeholder="e.g. 4-2-3-1" oninput="onCustomFormInput()">
+        <button class="apply-btn" data-i18n="btn.apply" onclick="applyCustomFormation()">Apply</button>
       </div>
       <div class="form-msg" id="formMsg"></div>
       <div class="staff-divider"></div>
-      <label>Club Badge</label>
+      <label data-i18n="label.clubBadge">Club Badge</label>
       <div class="badge-upload">
         <input type="file" id="badgeFile" accept="image/*" onchange="loadBadge(this)">
         <div class="badge-row">
           <img id="badgePreview" class="badge-preview" alt="badge">
           <button class="clear-badge-btn" id="clearBadgeBtn" onclick="clearBadge()" style="display:none;">Remove</button>
         </div>
-        <label style="font-size:0.72rem;color:#666;margin-top:2px;">Shown in bottom-left of pitch</label>
+        <label style="font-size:0.72rem;color:#666;margin-top:2px;" data-i18n="label.badgeHint">Shown in bottom-left of pitch</label>
       </div>
     </div>
 
     <!-- SQUAD MANAGEMENT -->
     <div class="section">
-      <h3>Squad Management</h3>
+      <h3 data-i18n="section.squad">Squad Management</h3>
       <div class="squad-header">
-        <input type="text" class="squad-search" id="squadSearchInput" placeholder="Search players…" oninput="squadSearch=this.value;renderSquadList()">
-        <button class="squad-add-btn" onclick="openPlayerModal()">+ Add</button>
+        <input type="text" class="squad-search" id="squadSearchInput" data-i18n-ph="ph.squadSearch" placeholder="Search players…" oninput="squadSearch=this.value;renderSquadList()">
+        <button class="squad-add-btn" data-i18n="btn.addPlayer" onclick="openPlayerModal()">+ Add</button>
       </div>
       <div class="squad-count" id="squadCount">No players saved</div>
       <div class="squad-list" id="squadList">
@@ -147,12 +153,11 @@
 
     <!-- STARTING XI -->
     <div class="section">
-      <h3>Starting XI</h3>
+      <h3 data-i18n="section.starting">Starting XI</h3>
       <div style="display:flex;gap:4px;margin-bottom:6px;font-size:0.7rem;color:#888;">
-        <span style="width:24px;text-align:right;">#</span>
-        <span style="flex:1;margin-left:6px;">Name</span>
+        <span style="flex:1;" data-i18n="col.name">Name</span>
         <span style="width:24px;"></span>
-        <span style="width:52px;">Shirt #</span>
+        <span style="width:52px;" data-i18n="col.shirt">Shirt #</span>
       </div>
       <div class="player-list" id="playerList"></div>
       <div id="lineupWarnings" class="lineup-warnings"></div>
@@ -160,36 +165,36 @@
 
     <!-- SUBSTITUTES -->
     <div class="section">
-      <h3>Substitutes</h3>
-      <label>Number of subs: <span id="subCountLabel">5</span></label>
+      <h3 data-i18n="section.subs">Substitutes</h3>
+      <label><span data-i18n="label.numSubs">Number of subs:</span> <span id="subCountLabel">5</span></label>
       <input type="range" id="subSlider" min="1" max="9" value="5" style="width:100%;accent-color:#e94560;margin-bottom:10px;">
       <div style="display:flex;gap:4px;margin-bottom:6px;font-size:0.7rem;color:#888;">
         <span style="width:24px;text-align:right;">#</span>
-        <span style="flex:1;margin-left:6px;">Name</span>
-        <span style="width:52px;">Shirt #</span>
+        <span style="flex:1;margin-left:6px;" data-i18n="col.name">Name</span>
+        <span style="width:52px;" data-i18n="col.shirt">Shirt #</span>
       </div>
       <div class="player-list" id="subList"></div>
     </div>
 
     <!-- STAFF -->
     <div class="section">
-      <h3>Staff</h3>
-      <p class="staff-sub">Head Coach</p>
-      <input type="text" id="coachName" placeholder="Coach name" value="Coach Smith">
+      <h3 data-i18n="section.staff">Staff</h3>
+      <p class="staff-sub" data-i18n="staff.head">Head Coach</p>
+      <input type="text" id="coachName" data-i18n-ph="ph.coachName" placeholder="Coach name" value="Coach Smith">
       <div class="staff-extras">
-        <div class="color-row"><label>Jersey</label><input type="color" id="coachColor" value="#8e44ad"></div>
+        <div class="color-row"><label data-i18n="label.jersey">Jersey</label><input type="color" id="coachColor" value="#8e44ad"></div>
         <div class="initials-wrap">
-          <label>Initials</label>
+          <label data-i18n="label.initials">Initials</label>
           <input type="text" id="coachInitials" value="HC" maxlength="3">
         </div>
       </div>
       <div class="staff-divider"></div>
-      <p class="staff-sub">Asst. Coach</p>
-      <input type="text" id="asstCoachName" placeholder="Assistant name" value="Asst. Jones">
+      <p class="staff-sub" data-i18n="staff.asst">Asst. Coach</p>
+      <input type="text" id="asstCoachName" data-i18n-ph="ph.asstName" placeholder="Assistant name" value="Asst. Jones">
       <div class="staff-extras">
-        <div class="color-row"><label>Jersey</label><input type="color" id="asstColor" value="#27ae60"></div>
+        <div class="color-row"><label data-i18n="label.jersey">Jersey</label><input type="color" id="asstColor" value="#27ae60"></div>
         <div class="initials-wrap">
-          <label>Initials</label>
+          <label data-i18n="label.initials">Initials</label>
           <input type="text" id="asstInitials" value="AC" maxlength="3">
         </div>
       </div>
@@ -197,15 +202,15 @@
 
     <!-- SHARE -->
     <div class="section">
-      <h3>Share Lineup</h3>
+      <h3 data-i18n="section.share">Share Lineup</h3>
       <div class="share-area">
-        <button class="share-btn" onclick="copyShareLink()">🔗 Copy Share Link</button>
+        <button class="share-btn" data-i18n="btn.copyLink" onclick="copyShareLink()">🔗 Copy Share Link</button>
         <div class="share-toast" id="shareToast"></div>
       </div>
     </div>
 
-    <button class="btn-primary" onclick="render()">🎨 RENDER LINEUP</button>
-    <button class="btn-secondary" onclick="exportPNG()">⬇ Export PNG</button>
+    <button class="btn-primary" data-i18n="btn.render" onclick="render()">🎨 RENDER LINEUP</button>
+    <button class="btn-secondary" data-i18n="btn.export" onclick="exportPNG()">⬇ Export PNG</button>
   </div>
 
   <!-- CANVAS -->
@@ -220,32 +225,32 @@
   <div class="modal-box">
     <h2 id="modalTitle">Add Player</h2>
     <div class="modal-2col">
-      <div><span class="modal-label">First Name</span><input type="text" id="mFirst" placeholder="First" oninput="autoFillDisplay()"></div>
-      <div><span class="modal-label">Last Name</span><input type="text" id="mLast" placeholder="Last" oninput="autoFillDisplay()"></div>
+      <div><span class="modal-label" data-i18n="label.firstName">First Name</span><input type="text" id="mFirst" data-i18n-ph="ph.firstName" placeholder="First" oninput="autoFillDisplay()"></div>
+      <div><span class="modal-label" data-i18n="label.lastName">Last Name</span><input type="text" id="mLast" data-i18n-ph="ph.lastName" placeholder="Last" oninput="autoFillDisplay()"></div>
     </div>
-    <span class="modal-label">Display Name <span style="color:#666;font-size:0.7rem;">(shown on jersey)</span></span>
-    <input type="text" id="mDisplay" placeholder="Display name" oninput="this.dataset.m='1'">
+    <span class="modal-label"><span data-i18n="label.displayName">Display Name</span> <span style="color:#666;font-size:0.7rem;" data-i18n="label.displayHint">(shown on jersey)</span></span>
+    <input type="text" id="mDisplay" data-i18n-ph="ph.displayName" placeholder="Display name" oninput="this.dataset.m='1'">
     <div class="modal-2col">
-      <div><span class="modal-label">Shirt #</span><input type="number" id="mShirt" min="1" max="99" placeholder="#" style="margin-bottom:0;"></div>
-      <div><span class="modal-label">Strong Foot</span><select id="mFoot" style="margin-bottom:0;"><option>Right</option><option>Left</option><option>Both</option><option>Unknown</option></select></div>
+      <div><span class="modal-label" data-i18n="label.shirtNum">Shirt #</span><input type="number" id="mShirt" min="1" max="99" placeholder="#" style="margin-bottom:0;"></div>
+      <div><span class="modal-label" data-i18n="label.strongFoot">Strong Foot</span><select id="mFoot" style="margin-bottom:0;"><option data-i18n="opt.right">Right</option><option data-i18n="opt.left">Left</option><option data-i18n="opt.both">Both</option><option data-i18n="opt.unknown">Unknown</option></select></div>
     </div>
-    <span class="modal-label">Player Type</span>
+    <span class="modal-label" data-i18n="label.playerType">Player Type</span>
     <select id="mType">
-      <option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Attacker</option><option>Utility</option>
+      <option data-i18n="opt.goalkeeper">Goalkeeper</option><option data-i18n="opt.defender">Defender</option><option data-i18n="opt.midfielder">Midfielder</option><option data-i18n="opt.attacker">Attacker</option><option data-i18n="opt.utility">Utility</option>
     </select>
-    <span class="modal-label">Preferred Positions <span style="color:#666;font-size:0.7rem;">(tap to select)</span></span>
+    <span class="modal-label"><span data-i18n="label.prefPos">Preferred Positions</span> <span style="color:#666;font-size:0.7rem;" data-i18n="label.prefHint">(tap to select)</span></span>
     <div class="pos-grid" id="mPref"></div>
-    <span class="modal-label">Secondary Positions</span>
+    <span class="modal-label" data-i18n="label.secPos">Secondary Positions</span>
     <div class="pos-grid" id="mSec"></div>
-    <span class="modal-label">Notes</span>
-    <input type="text" id="mNotes" placeholder="Optional coach notes">
+    <span class="modal-label" data-i18n="label.playerNotes">Notes</span>
+    <input type="text" id="mNotes" data-i18n-ph="ph.playerNotes" placeholder="Optional coach notes">
     <div class="modal-toggle-row">
-      <span>Active player</span>
+      <span data-i18n="label.active">Active player</span>
       <label class="toggle"><input type="checkbox" id="mActive" checked><span class="toggle-slider"></span></label>
     </div>
     <div class="modal-actions">
-      <button class="btn-secondary" onclick="closePlayerModal()">Cancel</button>
-      <button class="btn-primary" onclick="savePlayerModal()">Save</button>
+      <button class="btn-secondary" data-i18n="btn.cancel" onclick="closePlayerModal()">Cancel</button>
+      <button class="btn-primary" data-i18n="btn.save" onclick="savePlayerModal()">Save</button>
     </div>
   </div>
 </div>
@@ -255,6 +260,7 @@
   <div id="pickList"></div>
 </div>
 
+<script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
 <script src="js/state.js"></script>
 <script src="js/utils.js"></script>

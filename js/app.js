@@ -3,6 +3,7 @@ function applyState(s) {
   const sv = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
   sv('teamName', s.t); sv('jerseyColor', s.jc); sv('numberColor', s.nc);
   sv('shortsColor', s.sc); sv('gkColor', s.gk);
+  sv('gkNumberColor', s.gkn); sv('gkShortsColor', s.gks);
   sv('kitPattern', s.kp); sv('patternColor', s.pc);
   if (s.pt) {
     pitchType = s.pt;
@@ -82,13 +83,14 @@ function initCollapsible() {
   document.querySelectorAll('.section').forEach(sec => {
     const h3 = sec.querySelector('h3');
     if (!h3) return;
-    const key = h3.textContent.trim();
+    const key = h3.dataset.i18n || h3.textContent.trim();
     if (saved[key]) sec.classList.add('collapsed');
     h3.addEventListener('click', () => {
       sec.classList.toggle('collapsed');
       const state = {};
       document.querySelectorAll('.section').forEach(s => {
-        const t = s.querySelector('h3')?.textContent?.trim();
+        const h = s.querySelector('h3');
+        const t = h ? (h.dataset.i18n || h.textContent.trim()) : null;
         if (t) state[t] = s.classList.contains('collapsed');
       });
       localStorage.setItem(COLLAPSE_KEY, JSON.stringify(state));
@@ -102,6 +104,7 @@ document.addEventListener('click', () => {
 });
 
 // ── STARTUP ───────────────────────────────────────────────────────────────
+loadLanguage();
 loadMatch();
 loadSquad();
 loadState();          // restore full app state from localStorage
@@ -113,7 +116,7 @@ render();
 initCollapsible();
 
 [
-  'jerseyColor','numberColor','shortsColor','gkColor',
+  'jerseyColor','numberColor','shortsColor','gkColor','gkNumberColor','gkShortsColor',
   'teamName',
   'coachName','coachColor','coachInitials',
   'asstCoachName','asstColor','asstInitials',

@@ -254,7 +254,7 @@ function getPositions(formation, halfTop, halfH, inverted) {
 // ── JERSEY ────────────────────────────────────────────────────────────────
 function drawJersey(cx, cy, number, name, jColor, nColor, sColor, isGK, size, showNameOnShirt, pattern, patternCol) {
   const base  = jColor;
-  const sBase = isGK ? darken(jColor, 45) : sColor;
+  const sBase = sColor;
 
   const w      = size * 1.9;
   const h      = size * 2.3;
@@ -383,6 +383,8 @@ function placePlayersOnPitch(L) {
   const formation  = currentFormation || '4-3-3';
   const jColor     = document.getElementById('jerseyColor').value;
   const gkColor    = document.getElementById('gkColor').value;
+  const gkNumColor = document.getElementById('gkNumberColor').value;
+  const gkSrtColor = document.getElementById('gkShortsColor').value;
   const nColor     = document.getElementById('numberColor').value;
   const sColor     = document.getElementById('shortsColor').value;
   const pattern    = document.getElementById('kitPattern').value;
@@ -405,8 +407,10 @@ function placePlayersOnPitch(L) {
     if (!def) return;
     const pos = customPositions[i] ? customPositions[i] : def;
     lastPositions[i] = { x: pos.x, y: pos.y };
-    const jerseyC = p.isGK ? gkColor : jColor;
-    drawJersey(pos.x, pos.y, p.number, p.name, jerseyC, nColor, sColor, p.isGK, L.FIELD_SIZE, true, p.isGK ? null : pattern, patternCol);
+    const jerseyC = p.isGK ? gkColor    : jColor;
+    const numC    = p.isGK ? gkNumColor : nColor;
+    const shrtC   = p.isGK ? gkSrtColor : sColor;
+    drawJersey(pos.x, pos.y, p.number, p.name, jerseyC, numC, shrtC, p.isGK, L.FIELD_SIZE, true, p.isGK ? null : pattern, patternCol);
   });
 
   // Opponent team
@@ -436,6 +440,9 @@ function drawBench(L) {
   const jColor     = document.getElementById('jerseyColor').value;
   const nColor     = document.getElementById('numberColor').value;
   const sColor     = document.getElementById('shortsColor').value;
+  const gkColor    = document.getElementById('gkColor').value;
+  const gkNumColor = document.getElementById('gkNumberColor').value;
+  const gkSrtColor = document.getElementById('gkShortsColor').value;
   const { PP, PW, BT, SEAT_Y, SEAT_H, LEG_H, NAME_Y } = L;
 
   ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font='bold 11px Segoe UI';
@@ -452,9 +459,19 @@ function drawBench(L) {
   });
 
   const all = [
-    { name:coachName, number:coachInit, color:coachColor, nColor:'#fff' },
-    ...subs.map(s => ({ name:s.name, number:s.number, color:jColor, nColor })),
-    { name:asstName,  number:asstInit,  color:asstColor,  nColor:'#fff' },
+    { name:coachName, number:coachInit, color:coachColor, nColor:'#fff', sColor },
+    ...subs.map(s => {
+      const sp      = s.squadId ? getById(s.squadId) : null;
+      const isSubGK = sp && sp.playerType === 'Goalkeeper';
+      return {
+        name:   s.name,
+        number: s.number,
+        color:  isSubGK ? gkColor    : jColor,
+        nColor: isSubGK ? gkNumColor : nColor,
+        sColor: isSubGK ? gkSrtColor : sColor,
+      };
+    }),
+    { name:asstName, number:asstInit, color:asstColor, nColor:'#fff', sColor },
   ];
 
   const N    = all.length;
@@ -463,7 +480,7 @@ function drawBench(L) {
 
   all.forEach((p, i) => {
     const x = PP + PW*(i+1)/(N+1);
-    drawJersey(x, cy, p.number, p.name, p.color, p.nColor, sColor, false, size, false, null, null);
+    drawJersey(x, cy, p.number, p.name, p.color, p.nColor, p.sColor, false, size, false, null, null);
   });
 
   ctx.font='bold 10px Segoe UI'; ctx.textBaseline='top';
@@ -594,6 +611,8 @@ function getShareState() {
     nc: document.getElementById('numberColor').value,
     sc: document.getElementById('shortsColor').value,
     gk: document.getElementById('gkColor').value,
+    gkn: document.getElementById('gkNumberColor').value,
+    gks: document.getElementById('gkShortsColor').value,
     kp: document.getElementById('kitPattern').value,
     pc: document.getElementById('patternColor').value,
     pt: pitchType,

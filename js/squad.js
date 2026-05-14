@@ -12,11 +12,11 @@ function renderSquadList() {
   const fil = squad.filter(p => !q || p.displayName.toLowerCase().includes(q) || String(p.shirtNumber||'').includes(q));
   const cnt = document.getElementById('squadCount');
   const active = squad.filter(p=>p.active).length;
-  cnt.textContent = squad.length ? `${squad.length} player${squad.length>1?'s':''} · ${active} active` : 'No players saved';
+  cnt.textContent = squad.length ? t('squad.count', squad.length, active) : t('squad.noPlayers');
 
   const list = document.getElementById('squadList');
   if (!fil.length) {
-    list.innerHTML = `<div class="squad-empty">${squad.length ? 'No matches.' : 'No players yet — add your squad!'}</div>`;
+    list.innerHTML = `<div class="squad-empty">${squad.length ? t('squad.noMatches') : t('squad.empty')}</div>`;
     return;
   }
   list.innerHTML = '';
@@ -29,10 +29,10 @@ function renderSquadList() {
       <span class="squad-item-num">#${esc(p.shirtNumber||'—')}</span>
       <span class="squad-item-name" title="${esc(p.displayName)}">${esc(p.displayName)}</span>
       <span class="squad-item-type" style="color:${tc}">${ta}</span>
-      <button class="sq-btn" title="${p.active?'Mark inactive':'Mark active'}" onclick="toggleActive('${p.id}')">${p.active?'🟢':'⚫'}</button>
-      <button class="sq-btn" title="Edit" onclick="openPlayerModal('${p.id}')">✏️</button>
-      <button class="sq-btn" title="Duplicate" onclick="dupPlayer('${p.id}')">⧉</button>
-      <button class="sq-btn del" title="Delete" onclick="delPlayer('${p.id}')">✕</button>`;
+      <button class="sq-btn" title="${p.active ? t('squad.markInactive') : t('squad.markActive')}" onclick="toggleActive('${p.id}')">${p.active?'🟢':'⚫'}</button>
+      <button class="sq-btn" title="${t('squad.edit')}" onclick="openPlayerModal('${p.id}')">✏️</button>
+      <button class="sq-btn" title="${t('squad.duplicate')}" onclick="dupPlayer('${p.id}')">⧉</button>
+      <button class="sq-btn del" title="${t('squad.delete')}" onclick="delPlayer('${p.id}')">✕</button>`;
     list.appendChild(d);
   });
 }
@@ -42,7 +42,7 @@ function toggleActive(id) {
   p.active = !p.active; saveSquad(); renderSquadList(); checkWarnings();
 }
 function delPlayer(id) {
-  if (!confirm('Remove this player from the squad?')) return;
+  if (!confirm(t('squad.confirmDel'))) return;
   squad = squad.filter(p => p.id !== id); saveSquad(); renderSquadList(); checkWarnings();
 }
 function dupPlayer(id) {
@@ -55,7 +55,7 @@ function dupPlayer(id) {
 function openPlayerModal(id) {
   editingId = id || null;
   const p   = id ? getById(id) : null;
-  document.getElementById('modalTitle').textContent = p ? 'Edit Player' : 'Add Player';
+  document.getElementById('modalTitle').textContent = p ? t('modal.editPlayer') : t('modal.addPlayer');
   document.getElementById('mFirst').value   = p?.firstName   || '';
   document.getElementById('mLast').value    = p?.lastName    || '';
   const dn = document.getElementById('mDisplay');

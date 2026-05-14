@@ -87,26 +87,26 @@ function applyCustomFormation() {
 
 function validateFormation(val) {
   if (!/^\d+(-\d+)+$/.test(val))
-    return { ok: false, text: 'Format: numbers separated by dashes (e.g. 4-3-3)' };
+    return { ok: false, text: t('form.invalid') };
   const parts = val.split('-').map(Number);
   if (parts.some(p => p < 1))
-    return { ok: false, text: 'Each line must have at least 1 player' };
+    return { ok: false, text: t('form.minOne') };
   const sum = parts.reduce((a, b) => a + b, 0);
   if (sum !== outfieldCount)
-    return { ok: false, text: `Must sum to ${outfieldCount} outfield players (got ${sum})` };
-  return { ok: true, text: `✓ Valid — ${val}` };
+    return { ok: false, text: t('form.sumErr', outfieldCount, sum) };
+  return { ok: true, text: t('form.valid', val) };
 }
 
 function validateAnyFormation(val, n) {
   if (!/^\d+(-\d+)+$/.test(val))
-    return { ok: false, text: 'Format: numbers separated by dashes' };
+    return { ok: false, text: t('form.invalid') };
   const parts = val.split('-').map(Number);
   if (parts.some(p => p < 1))
-    return { ok: false, text: 'Each line must have at least 1 player' };
+    return { ok: false, text: t('form.minOne') };
   const sum = parts.reduce((a, b) => a + b, 0);
   if (sum !== n)
-    return { ok: false, text: `Must sum to ${n} (got ${sum})` };
-  return { ok: true, text: `✓ Valid — ${val}` };
+    return { ok: false, text: t('form.sumErrShort', n, sum) };
+  return { ok: true, text: t('form.valid', val) };
 }
 
 function onOppFormInput() {
@@ -139,8 +139,7 @@ function buildPlayerList() {
     row.className = 'player-row';
     row.dataset.squadId = saved[i]?.squadId || '';
     row.innerHTML = `
-      <span class="num">${i === 0 ? 'GK' : i}</span>
-      <input type="text"   value="${esc(saved[i]?.name || (i===0?'Goalkeeper':'Player '+i))}">
+      <input type="text"   value="${esc(saved[i]?.name || (i===0 ? t('default.gk') : t('default.player', i)))}">
       <button class="pick-btn" title="Pick from squad" onclick="onPickBtn(event,this,${i},'starter')">👤</button>
       <input type="number" min="1" max="99" value="${saved[i]?.num || (i+1)}">`;
     list.appendChild(row);
@@ -159,7 +158,7 @@ function buildSubList() {
     row.dataset.squadId = saved[i]?.squadId || '';
     row.innerHTML = `
       <span class="num" style="color:#f39c12;">${i+1}</span>
-      <input type="text"   value="${esc(saved[i]?.name || 'Sub '+(i+1))}">
+      <input type="text"   value="${esc(saved[i]?.name || t('default.sub', i+1))}">
       <button class="pick-btn" title="Pick from squad" onclick="onPickBtn(event,this,${i},'sub')">👤</button>
       <input type="number" min="1" max="99" value="${saved[i]?.num || (outfieldCount+2+i)}">`;
     list.appendChild(row);
@@ -190,8 +189,9 @@ function getPlayers() {
 
 function getSubs() {
   return [...document.querySelectorAll('#subList .player-row')].map((row, i) => ({
-    name:   row.querySelector('input[type=text]').value   || 'Sub'+(i+1),
-    number: row.querySelector('input[type=number]').value || (outfieldCount+2+i),
+    name:    row.querySelector('input[type=text]').value   || 'Sub'+(i+1),
+    number:  row.querySelector('input[type=number]').value || (outfieldCount+2+i),
+    squadId: row.dataset.squadId || '',
   }));
 }
 
@@ -239,7 +239,7 @@ function openPickDropdown(e, btn, rowIdx, slotType) {
   const dd = document.getElementById('pickDropdown');
   dd.style.display = 'none';
   const activeSquad = squad.filter(p => p.active);
-  if (!activeSquad.length) { showToast('No active squad players. Add players in Squad Management.'); return; }
+  if (!activeSquad.length) { showToast(t('squad.noActive')); return; }
   // (available filtering happens after pickTarget is set, below)
 
   const sel  = slotType === 'starter' ? '#playerList' : '#subList';
@@ -258,7 +258,7 @@ function openPickDropdown(e, btn, rowIdx, slotType) {
   list.innerHTML = '';
 
   if (!available.length) {
-    list.innerHTML = '<div style="padding:10px 12px;font-size:0.78rem;color:#888;">All squad players are already in the lineup.</div>';
+    list.innerHTML = `<div style="padding:10px 12px;font-size:0.78rem;color:#888;">${t('squad.allUsed')}</div>`;
     // still show dropdown so user sees the message
   } else {
     available.forEach(p => {
@@ -294,40 +294,107 @@ function applyPick(p) {
   render();
 }
 
-// ── LINEUP WARNINGS ───────────────────────────────────────────────────────
+// ── LINEUP VALIDATION ─────────────────────────────────────────────────────
 function checkWarnings() {
-  const issues    = [];
-  const shirtSeen = {};
-  const sqSeen    = {};
+  const checks      = [];
+  const shirtSeen   = {};
+  const sqSeen      = {};
 
-  const check = (rows, label) => {
-    rows.forEach(row => {
-      const name  = row.querySelector('input[type=text]').value.trim();
-      const num   = row.querySelector('input[type=number]').value.trim();
-      const sqId  = row.dataset.squadId || '';
-      if (num) {
-        if (shirtSeen[num]) issues.push({ sev:'warn', msg:`Duplicate shirt #${num}` });
-        else shirtSeen[num] = true;
+  const starterRows = [...document.querySelectorAll('#playerList .player-row')];
+  const subRows     = [...document.querySelectorAll('#subList .player-row')];
+  const allRows     = [...starterRows, ...subRows];
+
+  // ── Rule 1: GK slot has a name ──
+  const gkRow = starterRows[0];
+  if (gkRow) {
+    const gkName = gkRow.querySelector('input[type=text]').value.trim();
+    if (!gkName) {
+      checks.push({ sev:'error', key:'val.noGK' });
+    } else {
+      // Rule 1b: GK slot linked to a non-Goalkeeper type
+      const gkSqId = gkRow.dataset.squadId;
+      if (gkSqId) {
+        const gkPlayer = getById(gkSqId);
+        if (gkPlayer && gkPlayer.playerType !== 'Goalkeeper') {
+          checks.push({ sev:'warn', key:'val.gkMismatch', args:[gkPlayer.displayName] });
+        }
       }
-      if (sqId) {
-        if (sqSeen[sqId]) issues.push({ sev:'error', msg:`${name || 'A player'} appears more than once` });
-        else sqSeen[sqId] = true;
+    }
+  }
+
+  // ── Rule 2: empty outfield starter name slots (skip GK row — handled above) ──
+  const emptyCount = starterRows.slice(1).filter(r =>
+    !r.querySelector('input[type=text]').value.trim()
+  ).length;
+  if (emptyCount) checks.push({ sev:'warn', key:'val.emptySlots', args:[emptyCount] });
+
+  // ── Rules 3–5: shirt dups, player dups, inactive ──
+  allRows.forEach(row => {
+    const name = row.querySelector('input[type=text]').value.trim();
+    const num  = row.querySelector('input[type=number]').value.trim();
+    const sqId = row.dataset.squadId || '';
+
+    if (num) {
+      if (shirtSeen[num]) {
+        if (!checks.find(c => c.key === 'warn.dupShirt' && c.args?.[0] === num))
+          checks.push({ sev:'warn', key:'warn.dupShirt', args:[num] });
+      } else { shirtSeen[num] = true; }
+    }
+
+    if (sqId) {
+      if (sqSeen[sqId]) {
+        if (!checks.find(c => c.key === 'warn.dupPlayer' && c.args?.[0] === (name||'?')))
+          checks.push({ sev:'error', key:'warn.dupPlayer', args:[name||'?'] });
+      } else {
+        sqSeen[sqId] = true;
         const sp = getById(sqId);
-        if (sp && !sp.active) issues.push({ sev:'warn', msg:`${name} is marked inactive` });
+        if (sp && !sp.active) checks.push({ sev:'warn', key:'warn.inactive', args:[name] });
       }
-    });
-  };
+    }
+  });
 
-  check(document.querySelectorAll('#playerList .player-row'), 'starter');
-  check(document.querySelectorAll('#subList .player-row'),    'sub');
+  // ── Rules 6–7: no defenders / attackers (≥3 squad-linked starters needed) ──
+  const linkedStarters = starterRows
+    .filter(r => r.dataset.squadId)
+    .map(r => getById(r.dataset.squadId))
+    .filter(Boolean);
 
+  if (linkedStarters.length >= 3) {
+    if (!linkedStarters.some(p => p.playerType === 'Defender'))
+      checks.push({ sev:'warn', key:'val.noDef' });
+    if (!linkedStarters.some(p => p.playerType === 'Attacker'))
+      checks.push({ sev:'warn', key:'val.noAtt' });
+  }
+
+  // ── Render ──
   const container = document.getElementById('lineupWarnings');
   if (!container) return;
   container.innerHTML = '';
-  issues.forEach(iss => {
+
+  if (!checks.length) {
     const d = document.createElement('div');
-    d.className = `w-item ${iss.sev}`;
-    d.innerHTML = `<span>${iss.sev === 'error' ? '🔴' : '⚠️'}</span>${esc(iss.msg)}`;
+    d.className = 'val-clear';
+    d.innerHTML = `<span>✅</span><span>${esc(t('val.allClear'))}</span>`;
+    container.appendChild(d);
+    return;
+  }
+
+  const errCount  = checks.filter(c => c.sev === 'error').length;
+  const warnCount = checks.filter(c => c.sev === 'warn').length;
+  const parts = [];
+  if (errCount)  parts.push(t('val.summaryErrors',  errCount));
+  if (warnCount) parts.push(t('val.summaryWarnings', warnCount));
+
+  const sumEl = document.createElement('div');
+  sumEl.className = 'val-summary';
+  sumEl.textContent = parts.join(' · ');
+  container.appendChild(sumEl);
+
+  checks.forEach(c => {
+    const d = document.createElement('div');
+    d.className = `val-item ${c.sev}`;
+    const icon = c.sev === 'error' ? '🔴' : '⚠️';
+    d.innerHTML = `<span class="val-icon">${icon}</span><span class="val-msg">${esc(t(c.key, ...(c.args || [])))}</span>`;
     container.appendChild(d);
   });
 }
