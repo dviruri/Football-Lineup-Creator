@@ -53,7 +53,8 @@
 
   .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .toggle-row label { margin: 0; flex: 1; }
-  .toggle { position: relative; display: inline-block; width: 42px; height: 22px; flex-shrink: 0; }
+  .toggle-row .toggle { flex: none; }
+  .toggle { position: relative; display: inline-block; width: 42px; height: 22px; flex: none; }
   .toggle input { opacity: 0; width: 0; height: 0; }
   .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #2a2a5e; border-radius: 22px; transition: 0.3s; }
   .toggle-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #aaa; border-radius: 50%; transition: 0.3s; }
@@ -305,6 +306,9 @@ function setOutfield(n) {
   outfieldCount    = parseInt(n);
   document.getElementById('outfieldCount').textContent = n;
   currentFormation = null;
+  oppFormation     = (FORMATIONS[outfieldCount] || [['4-3-3']])[0][0];
+  document.getElementById('oppFormInput').value = oppFormation;
+  document.getElementById('oppFormMsg').textContent = '';
   customPositions  = {};
   buildFormationButtons();
   buildPlayerList();
@@ -336,7 +340,7 @@ function onOppFormInput() {
   const val = document.getElementById('oppFormInput').value.trim();
   const msg = document.getElementById('oppFormMsg');
   if (!val) { msg.textContent = ''; return; }
-  const r = validateAnyFormation(val, 10);
+  const r = validateAnyFormation(val, outfieldCount);
   msg.style.color = r.ok ? '#2ecc71' : '#e94560';
   msg.textContent = r.text;
 }
@@ -345,7 +349,7 @@ function applyOppFormation() {
   const val = document.getElementById('oppFormInput').value.trim();
   const msg = document.getElementById('oppFormMsg');
   if (!val) return;
-  const r = validateAnyFormation(val, 10);
+  const r = validateAnyFormation(val, outfieldCount);
   msg.style.color = r.ok ? '#2ecc71' : '#e94560';
   msg.textContent = r.text;
   if (!r.ok) return;
@@ -806,16 +810,18 @@ function getPositions(formation, halfTop, halfH, inverted) {
   const lc    = lines.length;
   const pos   = [];
 
-  const gkFrac   = inverted ? 0.10 : 0.86;
-  const topFrac  = inverted ? 0.88 : 0.10;
-  const botFrac  = inverted ? 0.26 : 0.64;
-  const range    = 0.54;
+  const gkFrac  = inverted ? 0.10 : 0.86;
+  const defFrac = inverted ? 0.26 : 0.64;  // line closest to own GK
+  const range   = 0.54;
 
   pos.push({ x: W/2, y: halfTop + halfH * gkFrac });
   lines.forEach((count, li) => {
-    const frac = botFrac - (li / Math.max(lc-1,1)) * range;
-    const adjFrac = inverted ? topFrac + (li / Math.max(lc-1,1)) * range : frac;
-    const y = halfTop + halfH * adjFrac;
+    // not inverted: defense at 0.64, attack at 0.64-0.54=0.10
+    // inverted:     defense at 0.26, attack at 0.26+0.54=0.80
+    const frac = inverted
+      ? defFrac + (li / Math.max(lc-1, 1)) * range
+      : defFrac - (li / Math.max(lc-1, 1)) * range;
+    const y = halfTop + halfH * frac;
     for (let p=0; p<count; p++)
       pos.push({ x: PP + PW*(p+1)/(count+1), y });
   });
@@ -985,10 +991,9 @@ function placePlayersOnPitch(L) {
     const oppJ  = document.getElementById('oppJerseyColor').value;
     const oppN  = document.getElementById('oppNumberColor').value;
     const oppS  = document.getElementById('oppShortsColor').value;
-    const oppFm = oppFormation || '4-3-3';
+    const oppFm = oppFormation || (FORMATIONS[outfieldCount] || [['4-3-3']])[0][0];
     const oppPositions = getPositions(oppFm, L.PT, L.PH, true);
-    const oppCount = oppFm.split('-').map(Number).reduce((a,b)=>a+b,0) + 1;
-    for (let i = 0; i < Math.min(oppPositions.length, oppCount); i++) {
+    for (let i = 0; i < Math.min(oppPositions.length, outfieldCount + 1); i++) {
       const isGK = i === 0;
       const oppGK = isGK ? darken(oppJ, 45) : oppJ;
       drawJersey(oppPositions[i].x, oppPositions[i].y, i+1, '', isGK ? oppGK : oppJ, oppN, oppS, isGK, L.FIELD_SIZE, false, null, null);
