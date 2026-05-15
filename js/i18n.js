@@ -1,16 +1,26 @@
 // ── INTERNATIONALISATION ──────────────────────────────────────────────────
 const TRANSLATIONS = {
   en: {
-    // Header
-    'header.tagline': 'Build your perfect lineup, visualize the pitch',
+    // App name & header
+    'app.name':       'RoTactic',
+    'header.tagline': 'Squad rotation & match tactics for every manager',
     // Sections
-    'section.match':    'Match Setup',
-    'section.team':     'Team Setup',
-    'section.squad':    'Squad Management',
-    'section.starting': 'Starting XI',
-    'section.subs':     'Substitutes',
-    'section.staff':    'Staff',
-    'section.share':    'Share Lineup',
+    'section.match':     'Match Setup',
+    'section.team':      'Team Setup',
+    'section.squad':     'Squad Management',
+    'section.starting':  'Starting XI',
+    'section.subs':      'Substitutes',
+    'section.staff':     'Staff',
+    'section.share':     'Share Lineup',
+    'section.formation': 'Formation',
+    // Navigation
+    'nav.myClub':        'My Club',
+    // Matches panel
+    'matches.title':     'My Matches',
+    'matches.new':       '+ New Match',
+    'matches.empty':     'No matches yet — create your first one!',
+    'matches.untitled':  'Untitled Match',
+    'matches.open':      'Open →',
     // Match Setup
     'label.matchTitle':  'Match Title',
     'ph.matchTitle':     'e.g. U12 Cup Semi-Final',
@@ -90,11 +100,19 @@ const TRANSLATIONS = {
     'ph.asstName':       'Assistant name',
     'label.jersey':      'Jersey',
     'label.initials':    'Initials',
+    // Buttons
+    'btn.remove':        'Remove',
     // Share
     'btn.copyLink':      '🔗 Copy Share Link',
+    'toast.linkCopied':  'Link copied!',
     // Main buttons
     'btn.render':        '🎨 RENDER LINEUP',
     'btn.export':        '⬇ Export PNG',
+    // Canvas
+    'canvas.hint':       'Drag players to reposition · Changes re-render live',
+    'canvas.bench':      'BENCH',
+    'canvas.halfway':    'HALFWAY LINE',
+    'canvas.opponent':   'Opponent',
     // Formation validation
     'form.invalid':      'Format: numbers separated by dashes (e.g. 4-3-3)',
     'form.minOne':       'Each line must have at least 1 player',
@@ -146,16 +164,26 @@ const TRANSLATIONS = {
     'btn.save':          'Save',
   },
   he: {
-    // Header
-    'header.tagline': 'בנה את ההרכב המושלם, הצג את המגרש',
+    // App name & header
+    'app.name':       'רוטקטיקה',
+    'header.tagline': 'ניהול רוטציה וטקטיקה לכל מאמן',
     // Sections
-    'section.match':    'הגדרות משחק',
-    'section.team':     'הגדרות קבוצה',
-    'section.squad':    'ניהול סגל',
-    'section.starting': 'הרכב פותח',
-    'section.subs':     'ספסל מחליפים',
-    'section.staff':    'צוות מקצועי',
-    'section.share':    'שיתוף הרכב',
+    'section.match':     'הגדרות משחק',
+    'section.team':      'הגדרות קבוצה',
+    'section.squad':     'ניהול סגל',
+    'section.starting':  'הרכב פותח',
+    'section.subs':      'ספסל מחליפים',
+    'section.staff':     'צוות מקצועי',
+    'section.share':     'שיתוף הרכב',
+    'section.formation': 'מערך',
+    // Navigation
+    'nav.myClub':        'הקבוצה שלי',
+    // Matches panel
+    'matches.title':     'המשחקים שלי',
+    'matches.new':       '+ משחק חדש',
+    'matches.empty':     'אין משחקים עדיין — צור את הראשון!',
+    'matches.untitled':  'משחק ללא שם',
+    'matches.open':      'פתח ◀',
     // Match Setup
     'label.matchTitle':  'כותרת משחק',
     'ph.matchTitle':     'לדוג׳ גביע U12 חצי גמר',
@@ -218,7 +246,7 @@ const TRANSLATIONS = {
     'squad.duplicate':   'שכפל',
     'squad.delete':      'מחק',
     'squad.confirmDel':  'להסיר שחקן זה מהקבוצה?',
-    'squad.noActive':    'אין שחקנים פעילים. הוסף שחקנים בניהול שחקנים.',
+    'squad.noActive':    'אין שחקנים פעילים. הוסף שחקנים בניהול סגל.',
     'squad.allUsed':     'כל שחקני הקבוצה כבר בהרכב.',
     // Starting XI
     'col.name':          'שם',
@@ -235,11 +263,19 @@ const TRANSLATIONS = {
     'ph.asstName':       'שם עוזר מאמן',
     'label.jersey':      'חולצה',
     'label.initials':    'ר״ת',
+    // Buttons
+    'btn.remove':        'הסר',
     // Share
     'btn.copyLink':      '🔗 העתק קישור שיתוף',
+    'toast.linkCopied':  '!הקישור הועתק',
     // Main buttons
     'btn.render':        '🎨 צייר הרכב',
     'btn.export':        '⬇ ייצוא PNG',
+    // Canvas
+    'canvas.hint':       'גרור שחקנים לשינוי מיקום · שינויים מתעדכנים בזמן אמת',
+    'canvas.bench':      'ספסל',
+    'canvas.halfway':    'קו אמצע',
+    'canvas.opponent':   'יריב',
     // Formation validation
     'form.invalid':      'פורמט: מספרים מופרדים במקפים (לדוג׳ 4-3-3)',
     'form.minOne':       'כל שורה חייבת לכלול לפחות שחקן אחד',
@@ -317,6 +353,9 @@ function setLanguage(lang) {
   const sel = document.getElementById('langSelect');
   if (sel) sel.value = lang;
   applyTranslations();
+  if (typeof renderMatchCard     === 'function') renderMatchCard();
+  if (typeof checkWarnings       === 'function') checkWarnings();
+  if (typeof render              === 'function') render();
 }
 
 function loadLanguage() {

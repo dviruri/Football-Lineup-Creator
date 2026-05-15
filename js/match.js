@@ -10,6 +10,7 @@ function saveMatch() {
   matchData.notes    = document.getElementById('matchNotes').value;
   localStorage.setItem(MATCH_KEY, JSON.stringify(matchData));
   updateMatchMeta();
+  if (typeof updateMatchPageTitle === 'function') updateMatchPageTitle();
 }
 
 function loadMatch() {

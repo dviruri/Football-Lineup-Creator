@@ -18,7 +18,7 @@ function computeLayout() {
   const SEAT_H = 12;
   const LEG_H  = 16;
   const NAME_Y = SEAT_Y + SEAT_H + LEG_H + 6;
-  const H      = NAME_Y + 30;
+  const H      = NAME_Y + 44;
   const FIELD_SIZE = dual ? 19 : 23;
   const MID_Y = dual ? PT + PH : null;
   return { W, H, PP, PW, PH, PT, PB, ARC_R, GOAL_W, GOAL_D, BT, SEAT_Y, SEAT_H, LEG_H, NAME_Y, FIELD_SIZE, MID_Y, dual };
@@ -132,7 +132,7 @@ function drawMarkings(L) {
     ctx.save();
     ctx.fillStyle='rgba(255,255,255,0.28)'; ctx.font='10px Segoe UI';
     ctx.textAlign='left'; ctx.textBaseline='bottom';
-    ctx.fillText(document.getElementById('matchOpponent').value || 'Opponent', PP+5, MID_Y-3);
+    ctx.fillText(document.getElementById('matchOpponent').value || t('canvas.opponent'), PP+5, MID_Y-3);
     ctx.textBaseline='top';
     ctx.fillText(document.getElementById('teamName').value || 'My Team', PP+5, MID_Y+3);
     ctx.restore();
@@ -142,7 +142,7 @@ function drawMarkings(L) {
     ctx.save();
     ctx.fillStyle='rgba(255,255,255,0.28)'; ctx.font='10px Segoe UI';
     ctx.textAlign='left'; ctx.textBaseline='bottom';
-    ctx.fillText('HALFWAY LINE', PP+5, PT-3);
+    ctx.fillText(t('canvas.halfway'), PP+5, PT-3);
     ctx.restore();
     // Centre arc (half visible)
     ctx.beginPath(); ctx.arc(W/2, PT, ARC_R, 0, Math.PI); ctx.stroke();
@@ -447,7 +447,7 @@ function drawBench(L) {
 
   ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.font='bold 11px Segoe UI';
   ctx.textAlign='left'; ctx.textBaseline='top';
-  ctx.fillText('BENCH', PP, BT+6);
+  ctx.fillText(t('canvas.bench'), PP, BT+6);
 
   const sx=PP+12, sw=PW-24;
   ctx.fillStyle = pitchType==='indoor' ? '#8B6520' : '#5a5a5a';
@@ -485,11 +485,15 @@ function drawBench(L) {
 
   ctx.font='bold 10px Segoe UI'; ctx.textBaseline='top';
   all.forEach((p, i) => {
-    const x   = PP + PW*(i+1)/(N+1);
-    const lbl = p.name.length>9 ? p.name.slice(0,8)+'.' : p.name;
-    ctx.textAlign='center';
-    ctx.fillStyle=(p.color===coachColor||p.color===asstColor) ? p.color : 'rgba(255,255,255,0.65)';
-    ctx.fillText(lbl, x, NAME_Y);
+    const x      = PP + PW*(i+1)/(N+1);
+    const spaceI = p.name.indexOf(' ');
+    const line1  = spaceI > -1 ? p.name.slice(0, spaceI) : p.name;
+    const line2  = spaceI > -1 ? p.name.slice(spaceI+1)  : '';
+    const clamp  = (s) => s.length > 9 ? s.slice(0,8)+'.' : s;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = (p.color===coachColor||p.color===asstColor) ? p.color : 'rgba(255,255,255,0.65)';
+    ctx.fillText(clamp(line1), x, NAME_Y);
+    if (line2) ctx.fillText(clamp(line2), x, NAME_Y + 13);
   });
 }
 
@@ -642,7 +646,7 @@ function copyShareLink() {
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
   const url     = location.href.split('#')[0] + '#' + encoded;
   navigator.clipboard.writeText(url).then(() => {
-    showToast('Link copied!');
+    showToast(t('toast.linkCopied'));
   }).catch(() => {
     prompt('Copy this link:', url);
   });

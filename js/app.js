@@ -1,4 +1,108 @@
-// Persistence, startup, and event listeners
+// Persistence, startup, navigation, and event listeners
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────
+function goToClub() {
+  document.getElementById('page-match').classList.remove('active');
+  document.getElementById('page-club').classList.add('active');
+  renderMatchCard();
+}
+
+function goToMatch() {
+  document.getElementById('page-club').classList.remove('active');
+  document.getElementById('page-match').classList.add('active');
+  updateMatchPageTitle();
+  render();
+}
+
+function updateMatchPageTitle() {
+  const title = document.getElementById('matchTitle')?.value?.trim();
+  const el    = document.getElementById('matchPageTitle');
+  if (el) el.textContent = title || '';
+}
+
+function newMatch() {
+  // Clear persisted match state
+  localStorage.removeItem(STATE_KEY);
+  // Reset match meta fields
+  ['matchTitle','matchVenue','matchNotes','matchOpponent'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const sv = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  sv('matchDate',     '');
+  sv('matchFormat',   '');
+  sv('matchDuration', '90');
+  sv('matchPeriods',  '2');
+  document.getElementById('showOpponent').checked        = false;
+  document.getElementById('opponentSection').style.display = 'none';
+  // Reset lineup state
+  outfieldCount    = 10;
+  currentFormation = null;
+  customPositions  = {};
+  oppFormation     = '4-3-3';
+  subCount         = 5;
+  pitchType        = 'grass';
+  sv('outfieldSlider', '10');
+  document.getElementById('outfieldCount').textContent = '10';
+  sv('subSlider', '5');
+  document.getElementById('subCountLabel').textContent = '5';
+  sv('oppFormInput', '4-3-3');
+  // Reset pitch surface buttons
+  document.querySelectorAll('.pitch-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  // Reset home/away buttons
+  document.querySelectorAll('.ha-btn').forEach(b => b.classList.toggle('active', b.dataset.ha === 'home'));
+  buildFormationButtons();
+  buildPlayerList();
+  buildSubList();
+  saveMatch();
+  goToMatch();
+}
+
+function openMatch() {
+  goToMatch();
+}
+
+function renderMatchCard() {
+  const list = document.getElementById('matchesList');
+  if (!list) return;
+
+  const title = document.getElementById('matchTitle')?.value?.trim() || '';
+  const date  = document.getElementById('matchDate')?.value  || '';
+  const fmt   = document.getElementById('matchFormat')?.value || '';
+  const opp   = document.getElementById('matchOpponent')?.value?.trim() || '';
+  const hasState = !!localStorage.getItem(STATE_KEY) || !!localStorage.getItem(MATCH_KEY);
+  const hasMatch = !!(title || hasState);
+
+  const newBtn = document.getElementById('newMatchBtn');
+
+  if (!hasMatch) {
+    list.innerHTML = `
+      <div class="no-matches">
+        <div class="no-matches-icon">🏟️</div>
+        <div>${esc(t('matches.empty'))}</div>
+      </div>`;
+    if (newBtn) newBtn.disabled = false;
+    return;
+  }
+
+  const displayTitle = title || t('matches.untitled');
+  const metaParts = [];
+  if (date) metaParts.push(`📅 ${date}`);
+  if (fmt)  metaParts.push(`⚽ ${fmt}`);
+  if (opp)  metaParts.push(`🆚 ${esc(opp)}`);
+
+  list.innerHTML = `
+    <div class="match-card" onclick="openMatch()">
+      <div class="match-card-info">
+        <div class="match-card-title">${esc(displayTitle)}</div>
+        ${metaParts.length ? `<div class="match-card-meta">${metaParts.map(p=>`<span>${p}</span>`).join('')}</div>` : ''}
+      </div>
+      <button class="match-card-open" onclick="event.stopPropagation();openMatch()">${t('matches.open')}</button>
+    </div>`;
+
+  if (newBtn) newBtn.disabled = true; // prototype: 1 match max
+}
+
+// ── STATE PERSISTENCE ─────────────────────────────────────────────────────
 function applyState(s) {
   const sv = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
   sv('teamName', s.t); sv('jerseyColor', s.jc); sv('numberColor', s.nc);
@@ -90,8 +194,8 @@ function initCollapsible() {
       const state = {};
       document.querySelectorAll('.section').forEach(s => {
         const h = s.querySelector('h3');
-        const t = h ? (h.dataset.i18n || h.textContent.trim()) : null;
-        if (t) state[t] = s.classList.contains('collapsed');
+        const k = h ? (h.dataset.i18n || h.textContent.trim()) : null;
+        if (k) state[k] = s.classList.contains('collapsed');
       });
       localStorage.setItem(COLLAPSE_KEY, JSON.stringify(state));
     });
@@ -107,12 +211,13 @@ document.addEventListener('click', () => {
 loadLanguage();
 loadMatch();
 loadSquad();
-loadState();          // restore full app state from localStorage
-buildFormationButtons(); // safe re-call — uses current outfieldCount
+loadState();
+buildFormationButtons();
 buildPlayerList();
 buildSubList();
-loadFromHash();       // hash overrides saved state (share links)
+loadFromHash();
 render();
+renderMatchCard();
 initCollapsible();
 
 [
