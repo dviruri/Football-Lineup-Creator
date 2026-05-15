@@ -234,6 +234,17 @@
         <div class="player-list" id="subList"></div>
       </div>
 
+      <!-- SUBSTITUTION PLANNER -->
+      <div class="section">
+        <h3 data-i18n="section.planner">Substitution Planner</h3>
+        <div class="planner-actions">
+          <button class="planner-add-btn" data-i18n="planner.add" onclick="openSubModal(null)">+ Add Substitution</button>
+          <button class="planner-gen-btn" data-i18n="planner.generate" onclick="openRotationModal()">⚡ Generate Rotation</button>
+        </div>
+        <div id="plannerList" class="planner-list"></div>
+        <div id="plannerTimeTable"></div>
+      </div>
+
       <!-- SHARE -->
       <div class="section">
         <h3 data-i18n="section.share">Share Lineup</h3>
@@ -292,19 +303,136 @@
   </div>
 </div>
 
+<!-- ROTATION SETTINGS MODAL -->
+<div id="rotationModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeRotationModal()">
+  <div class="modal-box">
+    <h2 data-i18n="planner.rotModal.title">Generate Rotation</h2>
+
+    <span class="modal-label" data-i18n="planner.rotModal.style">Rotation Style</span>
+    <div class="rot-style-group">
+      <label class="rot-style-card">
+        <input type="radio" name="rotStyle" value="fair" checked onchange="updateRotStyleUI()">
+        <div class="rot-card-inner">
+          <span class="rot-card-icon">⚖️</span>
+          <strong data-i18n="planner.rotModal.fair">Fair</strong>
+          <small data-i18n="planner.rotModal.fairDesc">Equal time for all</small>
+        </div>
+      </label>
+      <label class="rot-style-card">
+        <input type="radio" name="rotStyle" value="priority" onchange="updateRotStyleUI()">
+        <div class="rot-card-inner">
+          <span class="rot-card-icon">⭐</span>
+          <strong data-i18n="planner.rotModal.priority">Priority</strong>
+          <small data-i18n="planner.rotModal.priorityDesc">Key players play more</small>
+        </div>
+      </label>
+      <label class="rot-style-card">
+        <input type="radio" name="rotStyle" value="fullgame" onchange="updateRotStyleUI()">
+        <div class="rot-card-inner">
+          <span class="rot-card-icon">🔒</span>
+          <strong data-i18n="planner.rotModal.fullgame">Full Game</strong>
+          <small data-i18n="planner.rotModal.fullgameDesc">Some never come off</small>
+        </div>
+      </label>
+      <label class="rot-style-card">
+        <input type="radio" name="rotStyle" value="mixed" onchange="updateRotStyleUI()">
+        <div class="rot-card-inner">
+          <span class="rot-card-icon">🎯</span>
+          <strong data-i18n="planner.rotModal.mixed">Mixed</strong>
+          <small data-i18n="planner.rotModal.mixedDesc">Custom roles per player</small>
+        </div>
+      </label>
+    </div>
+
+    <div id="priorityOpts" style="display:none;margin-bottom:8px;">
+      <span class="modal-label">
+        <span data-i18n="planner.rotModal.starterPct">Starters play</span>&nbsp;<span id="starterPctLabel">65</span>%
+      </span>
+      <input type="range" id="starterPct" min="50" max="90" value="65" step="5"
+             oninput="document.getElementById('starterPctLabel').textContent=this.value"
+             style="width:100%;accent-color:#e94560;margin-bottom:4px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#555;">
+        <span data-i18n="planner.rotModal.pctLow">50% — More rotation</span>
+        <span data-i18n="planner.rotModal.pctHigh">90% — Starters dominate</span>
+      </div>
+    </div>
+
+    <div id="fullGameOpts" style="display:none;margin-bottom:8px;">
+      <span class="modal-label" data-i18n="planner.rotModal.lockPlayers">Who plays the full game?</span>
+      <div id="fullGamePlayers" class="sub-player-select"></div>
+    </div>
+
+    <div id="mixedOpts" style="display:none;margin-bottom:8px;">
+      <span class="modal-label" data-i18n="planner.rotModal.mixedRoles">Role per player</span>
+      <div id="mixedPlayersList" class="mixed-players-list"></div>
+      <div style="margin-top:10px;">
+        <span class="modal-label">
+          <span data-i18n="planner.rotModal.priorityPct">Priority players play</span>&nbsp;<span id="mixedPctLabel">65</span>%
+        </span>
+        <input type="range" id="mixedPct" min="50" max="90" value="65" step="5"
+               oninput="document.getElementById('mixedPctLabel').textContent=this.value"
+               style="width:100%;accent-color:#f39c12;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#555;">
+          <span data-i18n="planner.rotModal.pctLow">50% — More rotation</span>
+          <span data-i18n="planner.rotModal.pctHigh">90% — Starters dominate</span>
+        </div>
+      </div>
+      <div class="mixed-hint" data-i18n="planner.rotModal.mixedHint">🔄 Rotation players share time equally</div>
+    </div>
+
+    <div class="rot-limits-row">
+      <div>
+        <span class="modal-label" data-i18n="planner.rotModal.maxSubs">Max substitutions</span>
+        <input type="number" id="rotMaxSubs" min="1" max="20"
+               data-i18n-ph="planner.rotModal.unlimited" placeholder="Unlimited" style="margin-bottom:0;">
+      </div>
+      <div>
+        <span class="modal-label" data-i18n="planner.rotModal.maxStops">Sub windows</span>
+        <input type="number" id="rotMaxStops" min="1" max="10"
+               data-i18n-ph="planner.rotModal.autoStops" placeholder="Auto" style="margin-bottom:0;">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" data-i18n="btn.cancel" onclick="closeRotationModal()">Cancel</button>
+      <button class="btn-primary"   data-i18n="planner.generate" onclick="confirmGenerateRotation()">⚡ Generate</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBSTITUTION EVENT MODAL -->
+<div id="subModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeSubModal()">
+  <div class="modal-box">
+    <h2 id="subModalTitle" data-i18n="planner.modalAdd">Add Substitution</h2>
+    <span class="modal-label" data-i18n="planner.minute">Minute</span>
+    <input type="number" id="subMinute" min="1" max="200" placeholder="45" style="margin-bottom:10px;">
+    <span class="modal-label" data-i18n="planner.playersOut">Players Off</span>
+    <div id="subPlayersOut" class="sub-player-select"></div>
+    <span class="modal-label" data-i18n="planner.playersIn">Players On</span>
+    <div id="subPlayersIn" class="sub-player-select"></div>
+    <span class="modal-label" data-i18n="label.notes">Notes</span>
+    <input type="text" id="subNotes" data-i18n-ph="ph.notes" placeholder="Tactical notes, reminders…">
+    <div class="modal-actions">
+      <button class="btn-secondary" data-i18n="btn.cancel" onclick="closeSubModal()">Cancel</button>
+      <button class="btn-primary"   data-i18n="btn.save"   onclick="saveSubModal()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- PICK DROPDOWN -->
 <div id="pickDropdown" class="pick-dropdown" style="display:none;">
   <div id="pickList"></div>
 </div>
 
-<script src="js/i18n.js?v=3"></script>
-<script src="js/config.js?v=3"></script>
-<script src="js/state.js?v=3"></script>
-<script src="js/utils.js?v=3"></script>
-<script src="js/match.js?v=3"></script>
-<script src="js/squad.js?v=3"></script>
-<script src="js/lineup.js?v=3"></script>
-<script src="js/render.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/i18n.js?v=9"></script>
+<script src="js/config.js?v=9"></script>
+<script src="js/state.js?v=9"></script>
+<script src="js/utils.js?v=9"></script>
+<script src="js/match.js?v=9"></script>
+<script src="js/squad.js?v=9"></script>
+<script src="js/lineup.js?v=9"></script>
+<script src="js/render.js?v=9"></script>
+<script src="js/planner.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 </body>
 </html>

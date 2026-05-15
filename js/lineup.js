@@ -146,6 +146,7 @@ function buildPlayerList() {
     if (saved[i]?.squadId) lockRow(row);
   }
   attachLiveRender('#playerList');
+  if (typeof renderPlanner === 'function') renderPlanner();
 }
 
 function buildSubList() {
@@ -165,6 +166,7 @@ function buildSubList() {
     if (saved[i]?.squadId) lockRow(row);
   }
   attachLiveRender('#subList');
+  if (typeof renderPlanner === 'function') renderPlanner();
 }
 
 function readRows(sel) {

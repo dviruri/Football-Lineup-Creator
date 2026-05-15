@@ -13,4 +13,7 @@ let squad       = [];
 let squadSearch = '';
 let editingId   = null;
 let pickTarget  = null;
-let matchData   = { title:'', date:'', opponent:'', venue:'', homeAway:'home', format:'', duration:90, periods:2, notes:'' }; // { rowEl }
+let matchData   = { title:'', date:'', opponent:'', venue:'', homeAway:'home', format:'', duration:90, periods:2, notes:'' };
+
+let subEvents    = [];   // [{ id, minute, playersOut[], playersIn[], notes, completed }]
+let editingSubId = null;

@@ -1,8 +1,9 @@
 // Constants: storage keys, formations, positions, and type mappings
-const SQUAD_KEY = 'flc_squad';
-const MATCH_KEY = 'flc_match';
-const STATE_KEY = 'flc_state';
+const SQUAD_KEY    = 'flc_squad';
+const MATCH_KEY    = 'flc_match';
+const STATE_KEY    = 'flc_state';
 const COLLAPSE_KEY = 'flc_collapsed';
+const PLANNER_KEY  = 'flc_planner';
 
 const FORMATIONS = {
   4:  [['1-2-1'],['1-1-2'],['2-1-1']],                              // 5v5

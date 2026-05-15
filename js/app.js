@@ -21,8 +21,11 @@ function updateMatchPageTitle() {
 }
 
 function newMatch() {
-  // Clear persisted match state
+  // Clear persisted match + planner state
   localStorage.removeItem(STATE_KEY);
+  localStorage.removeItem(PLANNER_KEY);
+  subEvents = [];
+  renderPlanner();
   // Reset match meta fields
   ['matchTitle','matchVenue','matchNotes','matchOpponent'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
@@ -216,6 +219,7 @@ buildFormationButtons();
 buildPlayerList();
 buildSubList();
 loadFromHash();
+loadPlanner();
 render();
 renderMatchCard();
 initCollapsible();
