@@ -300,3 +300,314 @@ header { position: relative; }
 [dir="rtl"] .pick-dropdown { direction: rtl; }
 [dir="rtl"] .modal-box { direction: rtl; }
 [dir="rtl"] .ha-group { direction: rtl; }
+
+/* ══ PHASE 5 — MATCH-DAY MODE ══════════════════════════════════════════════ */
+
+/* Launch button — sits in the match-editor topbar */
+.md-launch-btn {
+  margin-left: auto;
+  background: #e94560;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.md-launch-btn:active { opacity: 0.75; }
+
+/* Scrollable body of the match-day page */
+#page-matchday { background: #12122a; }
+
+/* Two-column layout: cards left, pitch right */
+.md-layout {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 16px;
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+/* LEFT sidebar — scrollable cards */
+.md-scroll {
+  width: 320px;
+  min-width: 260px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 76px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+  box-sizing: border-box;
+  padding-bottom: 32px;
+}
+
+/* RIGHT panel — pitch + bench */
+.md-pitch-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: sticky;
+  top: 60px;
+}
+
+/* Matchday canvas — same visual as the match editor */
+.md-pitch-canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+}
+
+/* ── Timer card ── */
+.md-timer-card {
+  background: #1a1a2e;
+  border: 1px solid #2e2e4e;
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+}
+.md-period-badge {
+  display: inline-block;
+  background: #2e2e4e;
+  color: #aaa;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.md-clock {
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: #eee;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: 4px;
+  transition: color 0.4s;
+}
+.md-clock.md-running  { color: #27ae60; }
+.md-clock.md-overtime { color: #e94560; }
+.md-current-min { font-size: 0.85rem; color: #555; margin-bottom: 16px; }
+.md-timer-row { display: flex; gap: 10px; justify-content: center; }
+.md-btn-start, .md-btn-reset {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 110px;
+  transition: opacity 0.15s;
+}
+.md-btn-start { background: #e94560; color: #fff; }
+.md-btn-start.md-running { background: #f39c12; }
+.md-btn-reset { background: #2e2e4e; color: #ccc; }
+.md-btn-start:active, .md-btn-reset:active { opacity: 0.7; }
+
+/* ── Next substitution card ── */
+.md-next-card {
+  background: #0d2b1a;
+  border: 1px solid #27ae60;
+  border-radius: 14px;
+  padding: 14px;
+  transition: border-color 0.3s, background 0.3s;
+}
+.md-next-card.md-urgent {
+  background: #2a1a0a;
+  border-color: #f39c12;
+  animation: md-pulse 1.2s ease-in-out infinite;
+}
+.md-next-card.md-past { background: #2a0d0d; border-color: #e94560; }
+@keyframes md-pulse { 0%,100%{opacity:1} 50%{opacity:0.78} }
+
+.md-next-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.md-next-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #27ae60;
+}
+.md-next-card.md-urgent .md-next-label { color: #f39c12; }
+.md-next-card.md-past   .md-next-label { color: #e94560; }
+.md-next-min-badge {
+  background: #27ae60;
+  color: #fff;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.md-next-card.md-urgent .md-next-min-badge { background: #f39c12; }
+.md-next-card.md-past   .md-next-min-badge { background: #e94560; }
+.md-next-swap {
+  font-size: 0.92rem;
+  color: #ccc;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.md-next-note { font-size: 0.78rem; color: #555; margin-top: 3px; }
+.md-confirm-btn {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  background: #27ae60;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.md-next-card.md-urgent .md-confirm-btn { background: #f39c12; }
+.md-next-card.md-past   .md-confirm-btn { background: #e94560; }
+.md-confirm-btn:active { opacity: 0.75; }
+
+/* ── On-pitch / Bench two-column grid ── */
+.md-lineup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.md-lineup-half {
+  background: #1a1a2e;
+  border: 1px solid #2e2e4e;
+  border-radius: 12px;
+  padding: 12px;
+}
+.md-col-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #555;
+  margin-bottom: 8px;
+}
+.md-chips { display: flex; flex-direction: column; gap: 5px; }
+.md-chip {
+  background: #2e2e4e;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  color: #ddd;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+}
+.md-chip.md-chip-gk { border-left: 3px solid #e8a020; }
+.md-chip-num { font-size: 0.7rem; color: #555; min-width: 18px; text-align: right; flex-shrink: 0; }
+.md-empty-note { color: #444; font-size: 0.8rem; padding: 4px 0; }
+
+/* ── Generic card (subs plan, notes) ── */
+.md-card {
+  background: #1a1a2e;
+  border: 1px solid #2e2e4e;
+  border-radius: 12px;
+  padding: 14px;
+}
+.md-card-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* Substitution rows inside the plan card */
+.md-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-top: 1px solid #2e2e4e;
+}
+.md-sub-row:first-child { border-top: none; }
+.md-sub-badge {
+  background: #e94560;
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  min-width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.md-sub-row.md-done    .md-sub-badge { background: #2e2e4e; color: #444; }
+.md-sub-row.md-is-next .md-sub-badge { background: #f39c12; }
+.md-sub-swap-text {
+  flex: 1;
+  font-size: 0.88rem;
+  color: #ccc;
+  line-height: 1.4;
+  min-width: 0;
+}
+.md-sub-note { font-size: 0.75rem; color: #444; }
+.md-sub-row.md-done .md-sub-swap-text { color: #444; text-decoration: line-through; }
+.md-tick-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: #27ae60;
+  color: #fff;
+  flex-shrink: 0;
+  min-width: 42px;
+  transition: opacity 0.15s;
+}
+.md-sub-row.md-done .md-tick-btn { background: #2e2e4e; color: #555; }
+.md-tick-btn:active { opacity: 0.7; }
+
+/* Note textarea */
+.md-note-field {
+  width: 100%;
+  background: #12122a;
+  border: 1px solid #2e2e4e;
+  border-radius: 8px;
+  color: #eee;
+  font-size: 0.9rem;
+  padding: 10px;
+  resize: vertical;
+  min-height: 74px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.md-note-field:focus { border-color: #e94560; outline: none; }
+
+/* Mobile: single column, pitch on top */
+@media (max-width: 720px) {
+  .md-layout { flex-direction: column; padding: 10px; gap: 10px; }
+  .md-scroll  { width: 100%; min-width: 0; max-height: none; padding-right: 0; }
+  .md-pitch-panel { position: static; order: -1; }
+  .md-pitch-view  { min-height: 300px; }
+  .md-pitch-jersey { width: 32px; height: 32px; font-size: 0.68rem; }
+  .md-pitch-name   { font-size: 0.52rem; max-width: 44px; }
+}
+/* Responsive tweaks for very small screens */
+@media (max-width: 380px) {
+  .md-clock { font-size: 3.4rem; }
+  .md-btn-start, .md-btn-reset { padding: 11px 16px; min-width: 90px; font-size: 0.92rem; }
+  .md-chip { font-size: 0.82rem; padding: 7px 8px; }
+}
+
+/* RTL adjustments */
+[dir="rtl"] .md-chip-gk { border-left: none; border-right: 3px solid #e8a020; }
+[dir="rtl"] .md-launch-btn { margin-left: 0; margin-right: auto; }
+

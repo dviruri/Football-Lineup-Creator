@@ -1,6 +1,6 @@
 // Canvas drawing, drag, share/export functions
-const canvas = document.getElementById('pitchCanvas');
-const ctx    = canvas.getContext('2d');
+let canvas = document.getElementById('pitchCanvas');
+let ctx    = canvas.getContext('2d');
 
 function computeLayout() {
   const dual = document.getElementById('showOpponent')?.checked || false;
@@ -379,7 +379,7 @@ function drawJersey(cx, cy, number, name, jColor, nColor, sColor, isGK, size, sh
 
 // ── PLACE PLAYERS ON PITCH ────────────────────────────────────────────────
 function placePlayersOnPitch(L) {
-  const players    = getPlayers();
+  const players    = window._mdPlayersOverride || getPlayers();
   const formation  = currentFormation || '4-3-3';
   const jColor     = document.getElementById('jerseyColor').value;
   const gkColor    = document.getElementById('gkColor').value;
@@ -520,6 +520,27 @@ function drawBadge(L) {
   ctx.clip();
   ctx.drawImage(badgeImg, bx, by, bSize, bSize);
   ctx.restore();
+}
+
+// ── MATCHDAY CANVAS RENDER ────────────────────────────────────────────────
+// Renders the live lineup to a separate canvas without touching main state.
+function renderToCanvas(targetCanvas, liveSlots) {
+  if (!targetCanvas) return;
+  const savedCanvas = canvas;
+  const savedCtx    = ctx;
+  canvas = targetCanvas;
+  ctx    = targetCanvas.getContext('2d');
+  // Map formation slots to the player format render() expects
+  window._mdPlayersOverride = liveSlots.map(s => ({
+    name:   s.current,
+    number: s.number,
+    isGK:   s.isGK,
+    squadId: null,
+  }));
+  render();
+  canvas = savedCanvas;
+  ctx    = savedCtx;
+  window._mdPlayersOverride = null;
 }
 
 // ── DRAG & DROP ───────────────────────────────────────────────────────────
