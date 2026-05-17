@@ -136,6 +136,8 @@ const TRANSLATIONS = {
     'planner.col.on':         'On',
     'planner.col.off':        'Off',
     'planner.col.subs':       'Subs',
+    'planner.col.target':     'Target',
+    'planner.col.diff':       'Diff',
     // Rotation modal
     'planner.rotModal.title':       'Generate Rotation',
     'planner.rotModal.style':       'Rotation Style',
@@ -159,6 +161,7 @@ const TRANSLATIONS = {
     'planner.rotModal.priorityPct': 'Priority intensity',
     'planner.rotModal.mixedHint':   '🔄 Rotation players share time equally',
     'planner.rotModal.roleRotation':'Rotation',
+    'planner.rotModal.allowReentry':'Allow re-entry (subbed players can return)',
     // Formation validation
     'form.invalid':      'Format: numbers separated by dashes (e.g. 4-3-3)',
     'form.minOne':       'Each line must have at least 1 player',
@@ -345,6 +348,8 @@ const TRANSLATIONS = {
     'planner.col.on':         'על המגרש',
     'planner.col.off':        'ספסל',
     'planner.col.subs':       'חילופים',
+    'planner.col.target':     'יעד',
+    'planner.col.diff':       'סטייה',
     // Rotation modal
     'planner.rotModal.title':       'צור רוטציה',
     'planner.rotModal.style':       'סגנון רוטציה',
@@ -368,6 +373,7 @@ const TRANSLATIONS = {
     'planner.rotModal.priorityPct': 'עוצמת עדיפות',
     'planner.rotModal.mixedHint':   '🔄 שחקני רוטציה מתחלקים בזמן שווה',
     'planner.rotModal.roleRotation':'רוטציה',
+    'planner.rotModal.allowReentry':'חזרה מותרת (שחקן שיצא יכול לחזור)',
     // Formation validation
     'form.invalid':      'פורמט: מספרים מופרדים במקפים (לדוג׳ 4-3-3)',
     'form.minOne':       'כל שורה חייבת לכלול לפחות שחקן אחד',

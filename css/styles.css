@@ -239,13 +239,17 @@ header { position: relative; }
 .pl-btn.pl-undo:hover { border-color:#f1c40f; color:#f1c40f; }
 .pl-btn.pl-del:hover  { border-color:#e94560; color:#e94560; }
 
-.time-table-wrap { background:#1a1a2e; border-radius:7px; padding:8px 10px; margin-top:4px; }
-.time-table-header { display:grid; grid-template-columns:1fr 40px 40px 44px; gap:4px; color:#666; font-size:0.68rem; padding-bottom:5px; border-bottom:1px solid #2a2a5e; margin-bottom:3px; text-transform:uppercase; letter-spacing:0.4px; }
-.time-table-row { display:grid; grid-template-columns:1fr 40px 40px 44px; gap:4px; padding:3px 0; font-size:0.75rem; border-bottom:1px solid rgba(255,255,255,0.03); color:#ccc; }
-.time-table-row.time-low  { color:#f1c40f; }
-.time-table-row.time-high { color:#888; }
-.tt-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.time-fair { font-size:0.68rem; color:#555; margin-top:6px; text-align:right; }
+/* Time summary table */
+.time-table-wrap { margin-top:10px; font-size:0.78rem; }
+.time-table-header,
+.time-table-row   { display:grid; grid-template-columns:1fr 36px 42px 46px; gap:4px; align-items:center; padding:3px 6px; }
+.time-table-header { color:#666; font-size:0.7rem; border-bottom:1px solid #1a1a3e; padding-bottom:4px; margin-bottom:2px; }
+.time-table-row    { border-bottom:1px solid #12123a; }
+.time-table-row:last-child { border-bottom:none; }
+.tt-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#ccc; }
+.diff-ok   { color:#2ecc71; font-weight:600; }
+.diff-warn { color:#f39c12; font-weight:600; }
+.diff-bad  { color:#e94560; font-weight:600; }
 
 /* Rotation style cards */
 .rot-style-group { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:12px; }
@@ -261,6 +265,11 @@ header { position: relative; }
 /* Rotation limits row */
 .rot-limits-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
 .rot-limits-row .modal-label { margin-top:0; }
+
+/* Re-entry toggle */
+.rot-toggle-row { margin-top:10px; }
+.rot-toggle-label { display:inline-flex; align-items:center; gap:8px; font-size:0.82rem; color:#aaa; cursor:pointer; user-select:none; }
+.rot-toggle-label input[type=checkbox] { width:15px; height:15px; accent-color:#e94560; cursor:pointer; }
 
 /* Mixed mode per-player role rows */
 .mixed-players-list { background:#1a1a2e; border-radius:6px; padding:4px 6px; margin-bottom:4px; max-height:160px; overflow-y:auto; }

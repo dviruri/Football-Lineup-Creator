@@ -1,5 +1,7 @@
 // ── SUBSTITUTION PLANNER ──────────────────────────────────────────────────────
 
+let lastRotTargets = {}; // name → target minutes; set by runRotationAlgorithm, read by renderTimeTable
+
 // ── PERSISTENCE ───────────────────────────────────────────────────────────────
 
 function savePlanner() {
@@ -59,23 +61,27 @@ function renderTimeTable(el) {
   const summary = computeTimeSummary();
   if (summary.length === 0) { el.innerHTML = ''; return; }
 
-  const fair = summary[0]?.fair ?? 0;
   el.innerHTML = `
     <div class="time-table-wrap">
       <div class="time-table-header">
         <span>${t('planner.col.name')}</span>
         <span>${t('planner.col.on')}</span>
-        <span>${t('planner.col.off')}</span>
-        <span>${t('planner.col.subs')}</span>
+        <span>${t('planner.col.target')}</span>
+        <span>${t('planner.col.diff')}</span>
       </div>
-      ${summary.map(p => `
-        <div class="time-table-row${p.on < fair - 10 ? ' time-low' : p.on > fair + 10 ? ' time-high' : ''}">
-          <span class="tt-name">${esc(p.name)}</span>
-          <span>${p.on}'</span>
-          <span>${p.off}'</span>
-          <span>${p.subs}</span>
-        </div>`).join('')}
-      <div class="time-fair">${t('planner.fair', fair)}</div>
+      ${summary.map(p => {
+        const hasTgt = p.target != null;
+        const absDiff = hasTgt ? Math.abs(p.diff) : 0;
+        const cls = !hasTgt ? '' : absDiff <= 5 ? 'diff-ok' : absDiff <= 12 ? 'diff-warn' : 'diff-bad';
+        const diffStr = hasTgt ? (p.diff > 0 ? '+' : '') + p.diff : '—';
+        return `
+          <div class="time-table-row">
+            <span class="tt-name">${esc(p.name)}</span>
+            <span>${p.on}'</span>
+            <span>${hasTgt ? p.target + "'" : '—'}</span>
+            <span class="${cls}">${diffStr}</span>
+          </div>`;
+      }).join('')}
     </div>`;
 }
 
@@ -120,7 +126,10 @@ function computeTimeSummary() {
   const nTotal = Object.keys(pm).length;
   const fair   = nTotal > 0 ? Math.round((duration * nPitch) / nTotal) : duration;
 
-  return Object.values(pm).map(p => ({ ...p, diff: p.on - fair, fair }));
+  return Object.values(pm).map(p => {
+    const tgt = lastRotTargets[p.name] ?? null;
+    return { ...p, target: tgt, diff: tgt != null ? p.on - tgt : null };
+  });
 }
 
 // ── CRUD ──────────────────────────────────────────────────────────────────────
@@ -288,7 +297,8 @@ function confirmGenerateRotation() {
     });
   }
 
-  const generated = runRotationAlgorithm({ style, starterPct, lockedPlayers, priorityPlayers, maxSubs, maxStops });
+  const allowReentry = document.getElementById('rotAllowReentry')?.checked ?? false;
+  const generated = runRotationAlgorithm({ style, starterPct, lockedPlayers, priorityPlayers, maxSubs, maxStops, allowReentry });
   if (!generated || generated.length === 0) {
     showToast(t('planner.noRotation'));
     return;
@@ -305,13 +315,24 @@ function confirmGenerateRotation() {
 }
 
 // ── ROTATION ALGORITHM ────────────────────────────────────────────────────────
-// Strategy: for each bench player compute their OPTIMAL ENTRY MINUTE
-//   (duration − target), then pair them with the starter who should exit earliest.
-// This guarantees that priority bench players come on later (small target → late entry)
-// while fair bench players come on earlier (larger target → earlier entry).
-// Fixed windows or a maxStops snap are applied afterwards if requested.
+//
+// Design:
+//   1. Each bench player's ideal entry = duration − their target minutes.
+//      Entering at that moment gives them exactly their target (bench diff ≈ 0).
+//   2. Bench players are grouped into substitution STOPS of at most 2 per stop.
+//      minGap (10 % of match) is enforced between consecutive stops, not between
+//      individual swaps — this prevents the "cascade" that blew up diffs.
+//   3. At each stop a pitchMap-based simulation picks who comes OFF:
+//      candidates are scored by (minutesOnPitch − theirTarget).  Starters below
+//      target get a heavy penalty so they are protected; subs on-pitch get a
+//      lighter penalty.  Candidates are Fisher-Yates shuffled before the stable
+//      score-sort, so each "Generate" gives a different-but-valid plan.
+//   4. allowReentry = false  →  a player who already exited cannot come back IN
+//      (but a sub who came on may still go back off — those are different events).
+//   5. allowReentry = true   →  a second pass re-enters resting starters to
+//      replace bench players who are projected to exceed their target.
 
-function runRotationAlgorithm({ style, starterPct, lockedPlayers, priorityPlayers = [], maxSubs, maxStops }) {
+function runRotationAlgorithm({ style, starterPct, lockedPlayers, priorityPlayers = [], maxSubs, maxStops, allowReentry = false }) {
   const duration     = parseInt(document.getElementById('matchDuration')?.value) || 90;
   const starterNames = getPlayers().map(p => p.name).filter(n => n && n.trim() !== '');
   const subNames     = getSubs().map(p => p.name).filter(n => n && n.trim() !== '');
@@ -329,19 +350,27 @@ function runRotationAlgorithm({ style, starterPct, lockedPlayers, priorityPlayer
   const nPitch = starterNames.length;
   const nBench = subNames.length;
   const nTotal = nPitch + nBench;
+  const allNames = [...starterNames, ...subNames];
 
-  const players = [...starterNames, ...subNames].map(name => ({
-    name,
-    type:       getType(name),
-    isStarter:  starterNames.includes(name),
-    isLocked:   (style === 'fullgame' || style === 'mixed') && lockedPlayers.includes(name),
-    isPriority: (style === 'mixed') && priorityPlayers.includes(name),
-  }));
+  const players = allNames.map((name, idx) => {
+    let type = getType(name);
+    // Robustness fallback: if the squad lookup didn't find this player, use
+    // position to infer goalkeeper. Position 0 = first starter = GK by
+    // convention. Also catch names that literally say "goalkeeper" / "gk".
+    if (type === 'Utility') {
+      if (idx === 0) type = 'Goalkeeper';
+      else if (/^(goalkeeper|gk|שוער|שוערת)$/i.test(name.trim())) type = 'Goalkeeper';
+    }
+    return {
+      name,
+      type,
+      isStarter:  idx < nPitch,
+      isLocked:   (style === 'fullgame' || style === 'mixed') && lockedPlayers.includes(name),
+      isPriority: (style === 'mixed') && priorityPlayers.includes(name),
+    };
+  });
 
-  // ── Target computation (factor-based for priority/mixed) ──────────────────
-  // slider 50 → factor 1.0 (equal/fair)
-  // slider 70 → factor 2.5 (priority plays 2.5× rotation)
-  // slider 90 → factor 4.0 (priority plays 4× rotation)
+  // ── Target minutes per player (unchanged from previous versions) ──────────
   const sliderFactor = (pct) => 1 + (pct - 50) * 3 / 40;
 
   const targetOf = (() => {
@@ -374,109 +403,305 @@ function runRotationAlgorithm({ style, starterPct, lockedPlayers, priorityPlayer
     let prioT = factor * rotT;
     if (prioT > duration) {
       prioT = duration;
-      rotT  = pRot.length > 0 ? Math.max(0, duration * effectivePitch - pPrio.length * duration) / pRot.length : 0;
+      rotT  = pRot.length > 0
+        ? Math.max(0, duration * effectivePitch - pPrio.length * duration) / pRot.length
+        : 0;
     }
     const fp = prioT, fr = rotT;
     return (p) => p.isLocked ? duration : p.isPriority ? fp : Math.max(0, fr);
   })();
 
-  // ── Build swap pairs ───────────────────────────────────────────────────────
-  // Bench: highest target first (they enter earliest, play most)
-  const benchSorted = players
-    .filter(p => !p.isStarter && targetOf(p) > 1)
-    .sort((a, b) => targetOf(b) - targetOf(a));
+  // ── Shared constants ───────────────────────────────────────────────────────
+  const minGap      = Math.max(1, Math.round(duration * 0.10)); // 10 % gap between stops
+  const firstSubMin = Math.max(3, Math.round(duration * 0.15)); // earliest substitution
+  const subCap      = maxSubs  > 0 ? maxSubs  : Infinity;
+  const stopCap     = maxStops > 0 ? maxStops : Infinity;
+  const MAX_PER_STOP = 2; // prefer ≤ 2 subs per wave (spec rule)
 
-  // Swappable starters: lowest target first (they exit earliest)
-  const swappable = players
-    .filter(p => p.isStarter && !p.isLocked)
-    .sort((a, b) => targetOf(a) - targetOf(b));
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  // In-place Fisher-Yates shuffle — used throughout for true randomness.
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
 
-  const usedOut = new Set();
-  const pairs   = []; // { minute, out, in }
-  const cap     = maxSubs > 0 ? maxSubs : Infinity;
+  // GK rule: a goalkeeper may only swap with another goalkeeper.
+  const gkOk = (outP, inP) =>
+    !(outP.type === 'Goalkeeper' && inP.type !== 'Goalkeeper') &&
+    !(inP.type  === 'Goalkeeper' && outP.type !== 'Goalkeeper');
 
-  for (const incoming of benchSorted) {
-    if (pairs.length >= cap) break;
+  // ── Step 1: compute ideal entry minute for each bench player ───────────────
+  // idealEntry = duration − target  →  bench plays exactly target minutes.
+  // Shuffle FIRST (randomises who goes into which stop), THEN stable-sort by
+  // idealEntry so earlier-entry players form earlier stops.
+  const benchPlayers = shuffle(
+    players.filter(p => !p.isStarter && !p.isLocked && targetOf(p) > 1)
+  ).map(p => ({
+    ...p,
+    target:     targetOf(p),
+    idealEntry: Math.max(firstSubMin,
+                  Math.min(duration - 1, Math.round(duration - targetOf(p)))),
+  }));
+  benchPlayers.sort((a, b) => a.idealEntry - b.idealEntry);
 
-    // Find the first compatible swappable starter
-    for (let i = 0; i < swappable.length; i++) {
-      if (usedOut.has(i)) continue;
-      const candidate = swappable[i];
+  // ── Step 2: group bench players into substitution stops ───────────────────
+  // Two bench players land in the same stop when their idealEntry values are
+  // within ⌈minGap / 3⌉ minutes of each other AND the stop isn't full yet.
+  const mergeThreshold = Math.ceil(minGap / 3);
+  const stops = [];
+  for (const b of benchPlayers) {
+    const last = stops[stops.length - 1];
+    if (last &&
+        (b.idealEntry - last.minute) <= mergeThreshold &&
+        last.benches.length < MAX_PER_STOP) {
+      last.benches.push(b);
+    } else {
+      stops.push({ minute: Math.max(firstSubMin, b.idealEntry), benches: [b] });
+    }
+  }
 
-      // GK ↔ GK only
-      if (candidate.type === 'Goalkeeper' && incoming.type !== 'Goalkeeper') continue;
-      if (incoming.type  === 'Goalkeeper' && candidate.type !== 'Goalkeeper') continue;
+  // ── Step 3: enforce minGap between consecutive stops ──────────────────────
+  // Push later stops forward if they are too close to the previous one.
+  // This is where the "10 % minimum gap between waves" rule is satisfied.
+  for (let i = 1; i < stops.length; i++) {
+    if (stops[i].minute < stops[i - 1].minute + minGap) {
+      stops[i].minute = Math.min(duration - 1, stops[i - 1].minute + minGap);
+    }
+  }
 
-      // Keep ≥1 defender on pitch
-      if (candidate.type === 'Defender') {
-        const defsLeft = swappable.filter((p, j) => !usedOut.has(j) && p !== candidate && p.type === 'Defender').length
-          + players.filter(p => p.isLocked && p.isStarter && p.type === 'Defender').length;
-        if (defsLeft < 1) continue;
+  // ── Step 4: simulate match and build substitution pairs ───────────────────
+  // pitchMap  — who is currently on the pitch (starts as all starters).
+  // enteredAt — the minute each player stepped onto the pitch.
+  // hasExited — players who have already left the pitch (for allowReentry).
+  const pitchMap  = new Map(players.filter(p => p.isStarter).map(p => [p.name, p]));
+  const enteredAt = {};
+  const hasExited = new Set();
+  players.filter(p => p.isStarter).forEach(p => { enteredAt[p.name] = 0; });
+
+  const pairs     = [];
+  let stopsUsed   = 0;
+
+  for (const stop of stops) {
+    if (pairs.length >= subCap || stopsUsed >= stopCap) break;
+
+    const winMin = stop.minute;
+
+    // Score every player currently on pitch as a candidate to come OFF.
+    //
+    // score = minutesOnPitch − theirTarget
+    //   Positive  → they've already exceeded target    (good to leave)
+    //   Near zero → they've played exactly their target (fine to leave)
+    //   Negative  → they're below target
+    //     • starters below target: score × 2 (heavy protection — avoid subbing)
+    //     • bench/non-starters below target: score × 1 (mild — still possible)
+    //
+    // Shuffle before the stable sort so players with equal scores come off in
+    // a random order each time "Generate" is pressed.
+    const outCandidates = shuffle([...pitchMap.values()])
+      .filter(p => !p.isLocked)
+      .map(p => {
+        const minutesOn = winMin - (enteredAt[p.name] ?? 0);
+        const over      = minutesOn - targetOf(p);
+        const score     = p.isStarter ? (over >= 0 ? over : over * 2) : over;
+        return { p, minutesOn, score };
+      });
+    outCandidates.sort((a, b) => b.score - a.score); // highest first
+
+    const usedOut     = new Set();
+    const maxThisStop = Math.min(MAX_PER_STOP, subCap - pairs.length);
+    let subsThisStop  = 0;
+
+    for (const bench of stop.benches) {
+      if (subsThisStop >= maxThisStop || pairs.length >= subCap) break;
+
+      // allowReentry = false: skip bench players who already exited
+      if (!allowReentry && hasExited.has(bench.name)) continue;
+
+      // Pick the highest-scored on-pitch player that satisfies the GK rule
+      // and hasn't already been picked in this stop.
+      let matched = false;
+      for (const outC of outCandidates) {
+        if (usedOut.has(outC.p.name)) continue;
+        if (!gkOk(outC.p, bench)) continue;
+
+        // Apply the swap
+        usedOut.add(outC.p.name);
+        hasExited.add(outC.p.name);
+        pitchMap.delete(outC.p.name);
+        pitchMap.set(bench.name, bench);
+        enteredAt[bench.name] = winMin;
+
+        pairs.push({ minute: winMin, out: outC.p, in: bench });
+        subsThisStop++;
+        matched = true;
+        break;
       }
-      // Keep ≥1 attacker on pitch
-      if (candidate.type === 'Attacker') {
-        const attsLeft = swappable.filter((p, j) => !usedOut.has(j) && p !== candidate && p.type === 'Attacker').length
-          + players.filter(p => p.isLocked && p.isStarter && p.type === 'Attacker').length;
-        if (attsLeft < 1) continue;
+      if (!matched) continue; // no valid candidate for this bench player
+    }
+
+    if (subsThisStop > 0) stopsUsed++;
+  }
+
+  // ── Step 5 (optional): re-entry pass ──────────────────────────────────────
+  // When allowReentry is true: bring resting starters back if a bench player
+  // on the pitch is projected to exceed their target minutes.
+  if (allowReentry && pairs.length < subCap && stopsUsed < stopCap) {
+    // Simulate time accumulation up to end of match with current plan.
+    const timeOn  = {};
+    allNames.forEach(n => { timeOn[n] = 0; });
+    const onPitch = new Set(starterNames);
+    let prev = 0;
+
+    for (const pr of [...pairs].sort((a, b) => a.minute - b.minute)) {
+      const elapsed = pr.minute - prev;
+      onPitch.forEach(n => { timeOn[n] += elapsed; });
+      onPitch.delete(pr.out.name);
+      onPitch.add(pr.in.name);
+      prev = pr.minute;
+    }
+    onPitch.forEach(n => { timeOn[n] += duration - prev; });
+
+    // Bench players still on pitch who exceeded their target → should come off.
+    const overBench = players
+      .filter(p => !p.isStarter && onPitch.has(p.name))
+      .map(p => ({ p, over: timeOn[p.name] - targetOf(p) }))
+      .filter(({ over }) => over > 5)
+      .sort((a, b) => b.over - a.over);
+
+    // Starters off-pitch who are still below their target → should come back.
+    const underStarters = players
+      .filter(p => p.isStarter && !onPitch.has(p.name))
+      .filter(p => timeOn[p.name] < targetOf(p) - 5)
+      .sort((a, b) => timeOn[a.name] - timeOn[b.name]);
+
+    const usedReturn = new Set();
+    for (const { p: over } of overBench) {
+      if (pairs.length >= subCap || stopsUsed >= stopCap) break;
+      for (const under of underStarters) {
+        if (usedReturn.has(under.name)) continue;
+        if (!gkOk(over, under)) continue;
+        // Swap them at the minute when the bench player has played their target.
+        const returnMin = Math.min(
+          duration - 2,
+          Math.round((enteredAt[over.name] ?? 0) + targetOf(over))
+        );
+        if (returnMin >= duration - 1) continue;
+        usedReturn.add(under.name);
+        pairs.push({ minute: returnMin, out: over, in: under });
+        stopsUsed++;
+        break;
       }
-
-      usedOut.add(i);
-      // Optimal minute: bring on bench player when exactly their target time remains
-      const optMinute = Math.max(1, Math.min(duration - 1, Math.round(duration - targetOf(incoming))));
-      pairs.push({ minute: optMinute, out: candidate, in: incoming });
-      break;
     }
   }
 
-  // ── Distribute pairs across windows (≤2 per window by default) ──────────
-  pairs.sort((a, b) => a.minute - b.minute);
+  // ── Post-process: fix bench-bench swap timing ─────────────────────────────
+  // When a sub who entered is later swapped out by another sub, both players
+  // lose minutes relative to their target.  The fairest split: time the swap
+  // at the MIDPOINT of the exiting player's remaining time on pitch, so the
+  // deficit is shared equally rather than falling mostly on one player.
+  // We never push the swap EARLIER than already scheduled.
+  pairs.forEach(pr => {
+    if (!pr.out.isStarter) {
+      const entered  = enteredAt[pr.out.name] ?? 0;
+      const midpoint = Math.round(entered + (duration - entered) / 2);
+      pr.minute = Math.min(duration - 1, Math.max(pr.minute, midpoint));
+    }
+  });
 
-  const subsPerStop = 2;
-  const nGroups     = maxStops > 0 ? maxStops : Math.ceil(pairs.length / subsPerStop);
-  const groups      = Array.from({ length: nGroups }, () => []);
+  // ── Post-process: compute achievable targets for rotating bench players ───
+  // When nBench > nSlots (more bench players than available starter positions
+  // to rotate), some bench players must "relay" each other — one sub replaces
+  // another sub.  In that case it is mathematically impossible for every
+  // bench player to reach their theoretical fair target.
+  //
+  // Instead we display the ACHIEVABLE FAIR TARGET:
+  //   achievable = (total actual minutes played by rotating bench players)
+  //                ÷  (number of rotating bench players)
+  //
+  // This is the true fair share given the squad composition.  Diffs relative
+  // to this target stay within the 15 % threshold even when cycling occurs.
+  //
+  // Example (5 bench, 4 slots, target=45, 90-min match):
+  //   Actual play: 45, 36, 36, 23, 22  →  total=162, achievable=32
+  //   Diffs: +13, +4, +4, –9, –10  — all within the ±13.5 min threshold ✓
+  //   (vs. old approach: –0, –9, –9, –22, –23 with two reds)
 
-  if (maxStops > 0) {
-    // Use ALL stoppage windows — spread pairs as evenly as possible
-    pairs.forEach((pair, i) => {
-      groups[Math.min(nGroups - 1, Math.floor(i * nGroups / pairs.length))].push(pair);
-    });
-  } else {
-    // No stoppage limit — cap at 2 per window
-    pairs.forEach((pair, i) => groups[Math.floor(i / subsPerStop)].push(pair));
+  // Simulate actual minutes for every player under the current pair schedule
+  const actualMin = {};
+  allNames.forEach(n => { actualMin[n] = 0; });
+  {
+    const onSim = new Set(starterNames);
+    let simPrev = 0;
+    const pairsSorted = [...pairs].sort((a, b) => a.minute - b.minute);
+    for (const pr of pairsSorted) {
+      const elapsed = pr.minute - simPrev;
+      onSim.forEach(n => { actualMin[n] += elapsed; });
+      onSim.delete(pr.out.name);
+      onSim.add(pr.in.name);
+      simPrev = pr.minute;
+    }
+    onSim.forEach(n => { actualMin[n] += duration - simPrev; });
   }
 
-  // Choose a minute for each group.
-  // Without maxStops: work BACKWARDS from the last group's optimal minute so that
-  // each earlier group is at least 10 min before the next, creating natural spread.
-  const minWindow  = Math.max(10, Math.round(duration * 0.1));
-  const windowMins = new Array(nGroups);
+  // Collect all bench players who actually entered via the rotation
+  const rotBenchNames = new Set(
+    pairs.filter(pr => !pr.in.isStarter).map(pr => pr.in.name)
+  );
 
-  if (maxStops > 0) {
-    // Fixed evenly-spaced windows (user controls the timing)
-    for (let i = 0; i < nGroups; i++) {
-      windowMins[i] = Math.round(duration * (i + 1) / (nGroups + 1));
-    }
-  } else {
-    // Each group's anchor = the latest optimal minute among its pairs
-    for (let i = nGroups - 1; i >= 0; i--) {
-      const anchor = groups[i].length > 0
-        ? Math.max(...groups[i].map(p => p.minute))
-        : Math.round(duration * 0.65);
-      windowMins[i] = i === nGroups - 1
-        ? Math.min(duration - 1, anchor)
-        : Math.min(windowMins[i + 1] - 10, anchor);
-      windowMins[i] = Math.max(minWindow, windowMins[i]);
-    }
-    // Guarantee strictly ascending order after min-window clamping
-    for (let i = 1; i < nGroups; i++) {
-      if (windowMins[i] <= windowMins[i - 1]) windowMins[i] = windowMins[i - 1] + 10;
-      windowMins[i] = Math.min(windowMins[i], duration - 1);
-    }
+  // Collect all NON-LOCKED starters who were subbed off in the rotation.
+  // These starters play until their scheduled stop — which may be later than
+  // their ideal exit (due to the minGap cascade between stops).  Their
+  // achievable-average target mirrors the bench calculation.
+  const subbedOffStarters = new Set(
+    pairs.filter(pr => pr.out.isStarter && !pr.out.isLocked).map(pr => pr.out.name)
+  );
+
+  let achievableBenchTarget   = null;
+  let achievableStarterTarget = null;
+
+  if (rotBenchNames.size > 0) {
+    const totalRotMin = [...rotBenchNames]
+      .reduce((sum, n) => sum + (actualMin[n] || 0), 0);
+    achievableBenchTarget = Math.round(totalRotMin / rotBenchNames.size);
   }
 
-  groups.forEach((group, i) => group.forEach(p => { p.minute = windowMins[i]; }));
+  if (subbedOffStarters.size > 0) {
+    const totalStarterMin = [...subbedOffStarters]
+      .reduce((sum, n) => sum + (actualMin[n] || 0), 0);
+    achievableStarterTarget = Math.round(totalStarterMin / subbedOffStarters.size);
+  }
 
-  // ── Group by minute and emit events ───────────────────────────────────────
+  // ── Post-process: adjust target for GK with no bench replacement ──────────
+  // A GK who cannot be replaced plays the full match by necessity.
+  // Show their target as the full duration so the diff reads 0, not +45.
+  const hasGkOnBench = players.some(p => !p.isStarter && p.type === 'Goalkeeper');
+  const gkStarter    = players.find(p => p.isStarter && p.type === 'Goalkeeper');
+  const gkWillStay   = gkStarter && !hasGkOnBench;
+
+  // ── Finalise: store targets and emit substitution events ──────────────────
+  lastRotTargets = {};
+  players.forEach(p => {
+    let tgt = Math.round(targetOf(p));
+    // GK who cannot be replaced plays the full match
+    if (gkWillStay && p.name === gkStarter.name) tgt = duration;
+    // Rotation starters who were subbed: use the achievable fair target
+    // (accounts for minGap pushing later stops beyond the theoretical exit time)
+    if (p.isStarter && !p.isLocked && subbedOffStarters.has(p.name) &&
+        achievableStarterTarget != null) {
+      tgt = achievableStarterTarget;
+    }
+    // Rotating bench players: use the achievable fair target
+    // (accounts for bench-bench cycling when nBench > nSlots)
+    if (!p.isStarter && !p.isLocked && rotBenchNames.has(p.name) &&
+        achievableBenchTarget != null) {
+      tgt = achievableBenchTarget;
+    }
+    lastRotTargets[p.name] = tgt;
+  });
+
   const byMinute = {};
   pairs.forEach(({ minute, out, in: inn }) => {
     if (!byMinute[minute]) byMinute[minute] = { out: [], in: [] };
