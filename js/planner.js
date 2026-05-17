@@ -32,7 +32,7 @@ function renderPlanner() {
       const outStr = ev.playersOut.length ? ev.playersOut.map(esc).join(', ') : '—';
       const inStr  = ev.playersIn.length  ? ev.playersIn.map(esc).join(', ')  : '—';
       return `
-        <div class="planner-event${ev.completed ? ' planner-done' : ''}">
+        <div class="planner-event">
           <div class="planner-min">${ev.minute}'</div>
           <div class="planner-swap">
             <span class="planner-out">${outStr}</span>
@@ -41,11 +41,6 @@ function renderPlanner() {
             ${ev.notes ? `<div class="planner-note-text">${esc(ev.notes)}</div>` : ''}
           </div>
           <div class="planner-btns">
-            <button class="pl-btn${ev.completed ? ' pl-undo' : ' pl-done'}"
-                    onclick="toggleSubDone('${ev.id}')"
-                    title="${ev.completed ? t('planner.markPending') : t('planner.markDone')}">
-              ${ev.completed ? '↩' : '✓'}
-            </button>
             <button class="pl-btn pl-edit" onclick="openSubModal('${ev.id}')" title="Edit">✎</button>
             <button class="pl-btn pl-del"  onclick="deleteSubEvent('${ev.id}')" title="Delete">✕</button>
           </div>

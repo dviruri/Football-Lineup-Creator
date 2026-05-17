@@ -411,6 +411,12 @@ function placePlayersOnPitch(L) {
     const numC    = p.isGK ? gkNumColor : nColor;
     const shrtC   = p.isGK ? gkSrtColor : sColor;
     drawJersey(pos.x, pos.y, p.number, p.name, jerseyC, numC, shrtC, p.isGK, L.FIELD_SIZE, true, p.isGK ? null : pattern, patternCol);
+
+    // Goal / assist badge overlay (matchday only)
+    const gd = window._mdGoalOverride;
+    if (gd && p.name) drawPlayerIcons(pos.x, pos.y, L.FIELD_SIZE,
+      gd.scorers.get(p.name)  || 0,
+      gd.assisters.get(p.name) || 0);
   });
 
   // Opponent team
@@ -459,7 +465,7 @@ function drawBench(L) {
   });
 
   const all = [
-    { name:coachName, number:coachInit, color:coachColor, nColor:'#fff', sColor },
+    { name:coachName, number:coachInit, color:coachColor, nColor:'#fff', sColor, isStaff:true },
     ...subs.map(s => {
       const sp      = s.squadId ? getById(s.squadId) : null;
       const isSubGK = sp && sp.playerType === 'Goalkeeper';
@@ -469,9 +475,10 @@ function drawBench(L) {
         color:  isSubGK ? gkColor    : jColor,
         nColor: isSubGK ? gkNumColor : nColor,
         sColor: isSubGK ? gkSrtColor : sColor,
+        isStaff: false,
       };
     }),
-    { name:asstName, number:asstInit, color:asstColor, nColor:'#fff', sColor },
+    { name:asstName, number:asstInit, color:asstColor, nColor:'#fff', sColor, isStaff:true },
   ];
 
   const N    = all.length;
@@ -481,6 +488,12 @@ function drawBench(L) {
   all.forEach((p, i) => {
     const x = PP + PW*(i+1)/(N+1);
     drawJersey(x, cy, p.number, p.name, p.color, p.nColor, p.sColor, false, size, false, null, null);
+
+    // Goal / assist badge overlay for bench players (matchday only)
+    const gd = window._mdGoalOverride;
+    if (!p.isStaff && gd && p.name) drawPlayerIcons(x, cy, size,
+      gd.scorers.get(p.name)  || 0,
+      gd.assisters.get(p.name) || 0);
   });
 
   ctx.font='bold 10px Segoe UI'; ctx.textBaseline='top';
@@ -522,6 +535,55 @@ function drawBadge(L) {
   ctx.restore();
 }
 
+// ── GOAL / ASSIST ICON BADGE ──────────────────────────────────────────────
+// Draws ⚽ and 👟 emoji badges near a jersey for players who scored / assisted.
+function drawPlayerIcons(cx, cy, size, goals, assists) {
+  if (!goals && !assists) return;
+  ctx.save();
+
+  const r   = Math.max(9, size * 0.56);
+  let bx    = cx + size * 1.05;
+  let by    = cy - size * 1.0;
+
+  const drawBadge = (emoji, count, bg) => {
+    // Dark halo for contrast against any pitch colour
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur  = 6;
+    ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI*2);
+    ctx.fillStyle = bg; ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth   = 1.8;
+    ctx.stroke();
+
+    // Emoji
+    ctx.font         = `${Math.round(r * 1.5)}px Segoe UI Emoji, Apple Color Emoji, Noto Color Emoji, sans-serif`;
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, bx, by + 1);
+
+    // Count bubble when > 1
+    if (count > 1) {
+      const br  = r * 0.52;
+      const bbx = bx + r * 0.68, bby = by - r * 0.68;
+      ctx.beginPath(); ctx.arc(bbx, bby, br, 0, Math.PI*2);
+      ctx.fillStyle = '#e74c3c'; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.8; ctx.stroke();
+      ctx.font      = `bold ${Math.round(br * 1.6)}px Segoe UI`;
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(count), bbx, bby + 0.5);
+    }
+
+    by += r * 2.5;
+  };
+
+  if (goals)   drawBadge('⚽', goals,   '#f0f0f0');  // white — pops on green pitch
+  if (assists) drawBadge('👟', assists, '#f39c12');  // gold — clearly different from ⚽
+
+  ctx.restore();
+}
+
 // ── MATCHDAY CANVAS RENDER ────────────────────────────────────────────────
 // Renders the live lineup to a separate canvas without touching main state.
 function renderToCanvas(targetCanvas, liveSlots) {
@@ -530,6 +592,7 @@ function renderToCanvas(targetCanvas, liveSlots) {
   const savedCtx    = ctx;
   canvas = targetCanvas;
   ctx    = targetCanvas.getContext('2d');
+
   // Map formation slots to the player format render() expects
   window._mdPlayersOverride = liveSlots.map(s => ({
     name:   s.current,
@@ -537,10 +600,25 @@ function renderToCanvas(targetCanvas, liveSlots) {
     isGK:   s.isGK,
     squadId: null,
   }));
+
+  // Build scorer / assister look-up maps from live matchday goals
+  if (typeof mdGoals !== 'undefined' && mdGoals.length) {
+    const scorers  = new Map();
+    const assisters = new Map();
+    mdGoals.forEach(g => {
+      if (g.scorer)   scorers.set(g.scorer,    (scorers.get(g.scorer)    || 0) + 1);
+      if (g.assister) assisters.set(g.assister, (assisters.get(g.assister) || 0) + 1);
+    });
+    window._mdGoalOverride = { scorers, assisters };
+  } else {
+    window._mdGoalOverride = null;
+  }
+
   render();
   canvas = savedCanvas;
   ctx    = savedCtx;
   window._mdPlayersOverride = null;
+  window._mdGoalOverride    = null;
 }
 
 // ── DRAG & DROP ───────────────────────────────────────────────────────────
