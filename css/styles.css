@@ -979,6 +979,28 @@ header { position: relative; }
   font-size: 0.74rem;
 }
 
+/* RTL: swap text-align and padding so text stays close to the centre line */
+[dir="rtl"] .md-tl-us {
+  text-align: left;
+  padding-right: 0;
+  padding-left: 10px;
+}
+[dir="rtl"] .md-tl-them {
+  text-align: right;
+  padding-left: 0;
+  padding-right: 10px;
+}
+[dir="rtl"] .md-tl-header-us {
+  text-align: left;
+  padding-right: 0;
+  padding-left: 8px;
+}
+[dir="rtl"] .md-tl-header-them {
+  text-align: right;
+  padding-left: 0;
+  padding-right: 8px;
+}
+
 /* Assist credit in smaller muted text */
 .md-tl-assist {
   font-size: 0.7rem;
@@ -1080,9 +1102,10 @@ header { position: relative; }
 }
 .md-summary-team-block {
   flex: 1;
+  text-align: end;   /* right in LTR, left in RTL — always toward the score */
 }
 .md-summary-opp-block {
-  text-align: right;
+  text-align: start; /* left in LTR, right in RTL — always toward the score */
 }
 .md-summary-team-name {
   font-size: 1rem;
