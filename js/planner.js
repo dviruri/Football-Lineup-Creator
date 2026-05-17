@@ -144,29 +144,72 @@ function openSubModal(id) {
   document.getElementById('subMinute').value = ev?.minute ?? '';
   document.getElementById('subNotes').value  = ev?.notes  ?? '';
 
-  // Players Off — from starters
-  const outDiv = document.getElementById('subPlayersOut');
-  const starters = getPlayers().map(p => p.name).filter(Boolean);
-  outDiv.innerHTML = starters.length
-    ? starters.map(name => `
-        <label class="sub-check-label">
-          <input type="checkbox" class="sub-out-check" value="${esc(name)}"
-            ${(ev?.playersOut ?? []).includes(name) ? 'checked' : ''}>
-          ${esc(name)}
-        </label>`).join('')
-    : `<span class="planner-empty-small">${t('planner.noStarters')}</span>`;
+  // ── Pitch-state-aware player lists ────────────────────────────────────────
+  // Walk all sub events (except the one being edited) that happen BEFORE the
+  // chosen minute so we know exactly who is on / off the pitch at that point.
+  //
+  // The lists update live whenever the coach changes the minute field.
+  const starterNames = getPlayers().map(p => p.name).filter(Boolean);
+  const subNames     = getSubs().map(p => p.name).filter(Boolean);
+  const allNames     = [...starterNames, ...subNames];
 
-  // Players In — from bench
-  const inDiv = document.getElementById('subPlayersIn');
-  const bench = getSubs().map(p => p.name).filter(Boolean);
-  inDiv.innerHTML = bench.length
-    ? bench.map(name => `
-        <label class="sub-check-label">
-          <input type="checkbox" class="sub-in-check" value="${esc(name)}"
-            ${(ev?.playersIn ?? []).includes(name) ? 'checked' : ''}>
-          ${esc(name)}
-        </label>`).join('')
-    : `<span class="planner-empty-small">${t('planner.noBench')}</span>`;
+  let firstRender = true;
+
+  const buildLists = () => {
+    const outDiv   = document.getElementById('subPlayersOut');
+    const inDiv    = document.getElementById('subPlayersIn');
+    const minuteEl = document.getElementById('subMinute');
+
+    // Preserve whatever the coach has already ticked (only after first render)
+    let checkedOut, checkedIn;
+    if (firstRender) {
+      checkedOut  = new Set(ev?.playersOut ?? []);
+      checkedIn   = new Set(ev?.playersIn  ?? []);
+      firstRender = false;
+    } else {
+      checkedOut = new Set([...outDiv.querySelectorAll('.sub-out-check:checked')].map(c => c.value));
+      checkedIn  = new Set([...inDiv.querySelectorAll('.sub-in-check:checked')].map(c => c.value));
+    }
+
+    // Simulate pitch state up to (not including) the chosen minute
+    const minuteNum = parseInt(minuteEl.value);
+    const onPitch   = new Set(starterNames);
+
+    if (!isNaN(minuteNum) && minuteNum >= 1) {
+      [...subEvents]
+        .filter(e => e.id !== editingSubId && e.minute < minuteNum)
+        .sort((a, b) => a.minute - b.minute)
+        .forEach(e => {
+          e.playersOut.forEach(n => onPitch.delete(n));
+          e.playersIn.forEach(n => onPitch.add(n));
+        });
+    }
+
+    const offPitch = allNames.filter(n => !onPitch.has(n));
+
+    // Players who can come OFF = currently on the pitch
+    outDiv.innerHTML = [...onPitch].length
+      ? [...onPitch].map(name => `
+          <label class="sub-check-label">
+            <input type="checkbox" class="sub-out-check" value="${esc(name)}"
+              ${checkedOut.has(name) ? 'checked' : ''}>
+            ${esc(name)}
+          </label>`).join('')
+      : `<span class="planner-empty-small">${t('planner.noStarters')}</span>`;
+
+    // Players who can come IN = currently off the pitch
+    inDiv.innerHTML = offPitch.length
+      ? offPitch.map(name => `
+          <label class="sub-check-label">
+            <input type="checkbox" class="sub-in-check" value="${esc(name)}"
+              ${checkedIn.has(name) ? 'checked' : ''}>
+            ${esc(name)}
+          </label>`).join('')
+      : `<span class="planner-empty-small">${t('planner.noBench')}</span>`;
+  };
+
+  buildLists();
+  document.getElementById('subMinute').oninput = buildLists;
 
   document.getElementById('subModal').style.display = 'flex';
 }
