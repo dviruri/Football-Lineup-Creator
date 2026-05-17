@@ -507,7 +507,7 @@ const TRANSLATIONS = {
     'matchday.summaryBtn':    '📋 סיכום',
     'matchday.summaryTitle':  'סיכום משחק',
     'matchday.exportPng':     '📥 שמור PNG',
-    'matchday.ourGoalBtn':    '⚽ שערנו',
+    'matchday.ourGoalBtn':    '⚽ שער שלנו',
     'matchday.theirGoalBtn':  '⚽ שער יריב',
     'matchday.ourGoalTitle':  'שערנו ⚽',
     'matchday.theirGoalTitle':'שער היריב ⚽',

@@ -350,7 +350,11 @@ function mdOpenGoalModal(team) {
   document.getElementById('mdGoalMinute').value  = minute;
 
   const titleEl = document.getElementById('mdGoalModalTitle');
-  if (titleEl) titleEl.textContent = isUs ? t('matchday.ourGoalTitle') : t('matchday.theirGoalTitle');
+  if (titleEl) {
+    const teamName = document.getElementById('teamName')?.value?.trim()      || t('matchday.us');
+    const oppName  = document.getElementById('matchOpponent')?.value?.trim() || t('matchday.them');
+    titleEl.textContent = isUs ? `${teamName} ⚽` : `${oppName} ⚽`;
+  }
 
   const badgeEl = document.getElementById('mdGoalMinuteBadge');
   if (badgeEl) badgeEl.textContent = minute + "'";
@@ -442,10 +446,19 @@ function mdRenderScore() {
   if (themEl) themEl.textContent = mdTheirScore();
 
   // Team names pulled from match setup
+  const teamName = document.getElementById('teamName')?.value?.trim()       || '';
+  const oppName  = document.getElementById('matchOpponent')?.value?.trim()  || '';
+
   const teamNameEl = document.getElementById('mdScoreTeamUs');
   const oppEl      = document.getElementById('mdScoreTeamThem');
-  if (teamNameEl) teamNameEl.textContent = document.getElementById('teamName')?.value?.trim()   || t('matchday.us');
-  if (oppEl)      oppEl.textContent      = document.getElementById('opponent')?.value?.trim()   || t('matchday.them');
+  if (teamNameEl) teamNameEl.textContent = teamName || t('matchday.us');
+  if (oppEl)      oppEl.textContent      = oppName  || t('matchday.them');
+
+  // Goal buttons: show actual team / opponent name
+  const ourBtn  = document.querySelector('.md-goal-us');
+  const themBtn = document.querySelector('.md-goal-them');
+  if (ourBtn)  ourBtn.textContent  = `⚽ ${teamName || t('matchday.us')}`;
+  if (themBtn) themBtn.textContent = `⚽ ${oppName  || t('matchday.them')}`;
 
   // Goal event log
   const logEl = document.getElementById('mdGoalsList');
@@ -497,8 +510,8 @@ function mdRenderAll() {
 // ── Match summary & timeline ──────────────────────────────────────────────────
 
 function mdOpenSummary() {
-  const teamUs   = document.getElementById('teamName')?.value?.trim()   || t('matchday.us');
-  const teamThem = document.getElementById('opponent')?.value?.trim()   || t('matchday.them');
+  const teamUs   = document.getElementById('teamName')?.value?.trim()      || t('matchday.us');
+  const teamThem = document.getElementById('matchOpponent')?.value?.trim() || t('matchday.them');
 
   // Final score
   document.getElementById('mdSumScoreUs').textContent   = mdOurScore();
@@ -605,8 +618,8 @@ function mdRoundRect(cx, x, y, w, h, r) {
 }
 
 function mdExportSummaryPNG() {
-  const teamUs   = document.getElementById('teamName')?.value?.trim() || t('matchday.us');
-  const teamThem = document.getElementById('opponent')?.value?.trim() || t('matchday.them');
+  const teamUs   = document.getElementById('teamName')?.value?.trim()      || t('matchday.us');
+  const teamThem = document.getElementById('matchOpponent')?.value?.trim() || t('matchday.them');
   const matchTitle = document.getElementById('matchTitle')?.value?.trim() || '';
 
   // Build sorted events (same logic as mdBuildTimelineHTML)
