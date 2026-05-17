@@ -481,7 +481,7 @@ function mdRenderScore() {
     } else {
       return `<div class="md-goal-event md-goal-event-them">
         ${removeBtn}
-        <span>⚽ ${t('matchday.theirGoalLabel')}</span>
+        <span>⚽ ${esc(oppName)}</span>
         ${minBadge}
       </div>`;
     }
@@ -534,6 +534,8 @@ function mdCloseSummary() {
 }
 
 function mdBuildTimelineHTML() {
+  const oppName = document.getElementById('matchOpponent')?.value?.trim() || t('matchday.them');
+
   // Merge goals + completed subs, sort chronologically
   const events = [];
 
@@ -542,17 +544,7 @@ function mdBuildTimelineHTML() {
     scorer: g.scorer, assister: g.assister,
   }));
 
-  subEvents
-    .filter(ev => ev.completed)
-    .forEach(ev => events.push({
-      minute: ev.minute, type: 'sub',
-      playersOut: ev.playersOut, playersIn: ev.playersIn,
-    }));
-
-  // Goals first within same minute, subs after
-  events.sort((a, b) => a.minute !== b.minute
-    ? a.minute - b.minute
-    : (a.type === 'goal' ? -1 : 1));
+  events.sort((a, b) => a.minute - b.minute);
 
   if (!events.length)
     return `<div class="md-tl-empty">${t('matchday.noEvents')}</div>`;
@@ -561,44 +553,29 @@ function mdBuildTimelineHTML() {
   let us = 0, them = 0;
 
   return events.map(ev => {
-    if (ev.type === 'goal') {
-      const isUs = ev.team === 'us';
-      if (isUs) us++; else them++;
-      const scoreBadge = `<span class="md-tl-score-badge ${isUs ? 'md-tl-sb-us' : 'md-tl-sb-them'}">${us}–${them}</span>`;
-      const assistHtml = ev.assister
-        ? ` <span class="md-tl-assist">(${esc(ev.assister)})</span>` : '';
+    const isUs = ev.team === 'us';
+    if (isUs) us++; else them++;
+    const scoreBadge = `<span class="md-tl-score-badge ${isUs ? 'md-tl-sb-us' : 'md-tl-sb-them'}">${us}–${them}</span>`;
+    const assistHtml = ev.assister
+      ? ` <span class="md-tl-assist">(${esc(ev.assister)})</span>` : '';
 
-      const usCell   = isUs
-        ? `<div class="md-tl-us">⚽ ${esc(ev.scorer)}${assistHtml}</div>`
-        : `<div class="md-tl-us"></div>`;
-      const themCell = !isUs
-        ? `<div class="md-tl-them">⚽ ${t('matchday.theirGoalLabel')}</div>`
-        : `<div class="md-tl-them"></div>`;
+    const usCell   = isUs
+      ? `<div class="md-tl-us">⚽ ${esc(ev.scorer)}${assistHtml}</div>`
+      : `<div class="md-tl-us"></div>`;
+    const themCell = !isUs
+      ? `<div class="md-tl-them">⚽ ${esc(oppName)}</div>`
+      : `<div class="md-tl-them"></div>`;
 
-      return `
-        <div class="md-tl-row">
-          ${usCell}
-          <div class="md-tl-mid">
-            <span class="md-tl-min">${ev.minute}'</span>
-            <div class="md-tl-dot ${isUs ? 'md-tl-dot-us' : 'md-tl-dot-them'}"></div>
-            ${scoreBadge}
-          </div>
-          ${themCell}
-        </div>`;
-
-    } else {
-      const out = ev.playersOut.map(n => `<span class="planner-out">${esc(n)}</span>`).join(', ');
-      const inp = ev.playersIn.map(n  => `<span class="planner-in">${esc(n)}</span>`).join(', ');
-      return `
-        <div class="md-tl-row md-tl-sub-row">
-          <div class="md-tl-us md-tl-sub-detail">⇄ ${out} → ${inp}</div>
-          <div class="md-tl-mid">
-            <span class="md-tl-min">${ev.minute}'</span>
-            <div class="md-tl-dot md-tl-dot-sub"></div>
-          </div>
-          <div class="md-tl-them"></div>
-        </div>`;
-    }
+    return `
+      <div class="md-tl-row">
+        ${usCell}
+        <div class="md-tl-mid">
+          <span class="md-tl-min">${ev.minute}'</span>
+          <div class="md-tl-dot ${isUs ? 'md-tl-dot-us' : 'md-tl-dot-them'}"></div>
+          ${scoreBadge}
+        </div>
+        ${themCell}
+      </div>`;
   }).join('');
 }
 
@@ -628,12 +605,7 @@ function mdExportSummaryPNG() {
     minute: g.minute, type: 'goal', team: g.team,
     scorer: g.scorer, assister: g.assister,
   }));
-  subEvents.filter(ev => ev.completed).forEach(ev => events.push({
-    minute: ev.minute, type: 'sub',
-    playersOut: ev.playersOut, playersIn: ev.playersIn,
-  }));
-  events.sort((a, b) => a.minute !== b.minute
-    ? a.minute - b.minute : (a.type === 'goal' ? -1 : 1));
+  events.sort((a, b) => a.minute - b.minute);
 
   // ── Layout constants ──
   const SCALE  = 2;        // retina
@@ -751,75 +723,48 @@ function mdExportSummaryPNG() {
 
   events.forEach(ev => {
     const rowMid = y + ROW_H / 2;
+    const isUs = ev.team === 'us';
+    if (isUs) us++; else them++;
+    const scoreStr = `${us}–${them}`;
+    const textX = isUs ? MID_X - HALF_M - 12 : MID_X + HALF_M + 12;
+    const hasAssist = isUs && ev.assister;
 
-    if (ev.type === 'goal') {
-      const isUs = ev.team === 'us';
-      if (isUs) us++; else them++;
-      const scoreStr = `${us}–${them}`;
-      const textX = isUs ? MID_X - HALF_M - 12 : MID_X + HALF_M + 12;
-      const hasAssist = isUs && ev.assister;
+    // Scorer line
+    cx.font = 'bold 12px "Segoe UI", sans-serif';
+    cx.fillStyle = isUs ? '#6fcf97' : '#e57373';
+    cx.textAlign = isUs ? 'right' : 'left';
+    cx.textBaseline = 'middle';
+    cx.fillText(`⚽ ${isUs ? ev.scorer : teamThem}`, textX, rowMid - (hasAssist ? 8 : 2));
 
-      // Scorer line
-      cx.font = 'bold 12px "Segoe UI", sans-serif';
-      cx.fillStyle = isUs ? '#6fcf97' : '#e57373';
-      cx.textAlign = isUs ? 'right' : 'left';
-      cx.textBaseline = 'middle';
-      cx.fillText(`⚽ ${isUs ? ev.scorer : t('matchday.theirGoalLabel')}`, textX, rowMid - (hasAssist ? 8 : 2));
-
-      // Assist
-      if (hasAssist) {
-        cx.font = '10px "Segoe UI", sans-serif';
-        cx.fillStyle = '#9ab';
-        cx.fillText(`(${ev.assister})`, textX, rowMid + 8);
-      }
-
-      // Minute label
-      cx.font = 'bold 9px "Segoe UI", sans-serif';
-      cx.textAlign = 'center';
-      cx.fillStyle = '#777';
-      cx.fillText(`${ev.minute}'`, MID_X, rowMid - 17);
-
-      // Dot
-      cx.beginPath(); cx.arc(MID_X, rowMid - 6, 5.5, 0, Math.PI * 2);
-      cx.fillStyle = isUs ? '#27ae60' : '#e74c3c'; cx.fill();
-      cx.strokeStyle = '#0e0e1c'; cx.lineWidth = 1.5; cx.stroke();
-
-      // Score pill badge
-      const bw = 40, bh = 15, bx = MID_X - bw / 2, by = rowMid + 5;
-      cx.fillStyle = isUs ? 'rgba(39,174,96,0.22)' : 'rgba(231,76,60,0.22)';
-      mdRoundRect(cx, bx, by, bw, bh, 7); cx.fill();
-      cx.strokeStyle = isUs ? 'rgba(39,174,96,0.45)' : 'rgba(231,76,60,0.45)';
-      cx.lineWidth = 0.8;
-      mdRoundRect(cx, bx, by, bw, bh, 7); cx.stroke();
-      cx.font = 'bold 9px "Segoe UI", sans-serif';
-      cx.fillStyle = isUs ? '#6fcf97' : '#e57373';
-      cx.textAlign = 'center'; cx.textBaseline = 'middle';
-      cx.fillText(scoreStr, MID_X, by + bh / 2);
-
-    } else {
-      // Substitution row
-      const subLabel = `⇄ ${ev.playersOut.join(', ')} → ${ev.playersIn.join(', ')}`;
+    // Assist
+    if (hasAssist) {
       cx.font = '10px "Segoe UI", sans-serif';
-      cx.fillStyle = '#c9882a';
-      cx.textAlign = 'right';
-      cx.textBaseline = 'middle';
-      // Truncate if too long
-      const maxW = MID_X - HALF_M - 12 - PAD;
-      let label = subLabel;
-      while (cx.measureText(label).width > maxW && label.length > 8) label = label.slice(0, -4) + '…';
-      cx.fillText(label, MID_X - HALF_M - 12, rowMid);
-
-      // Minute label
-      cx.font = 'bold 9px "Segoe UI", sans-serif';
-      cx.textAlign = 'center';
-      cx.fillStyle = '#777';
-      cx.fillText(`${ev.minute}'`, MID_X, rowMid - 10);
-
-      // Small amber dot
-      cx.beginPath(); cx.arc(MID_X, rowMid, 4, 0, Math.PI * 2);
-      cx.fillStyle = '#f39c12'; cx.fill();
-      cx.strokeStyle = '#0e0e1c'; cx.lineWidth = 1; cx.stroke();
+      cx.fillStyle = '#9ab';
+      cx.fillText(`(${ev.assister})`, textX, rowMid + 8);
     }
+
+    // Minute label
+    cx.font = 'bold 9px "Segoe UI", sans-serif';
+    cx.textAlign = 'center';
+    cx.fillStyle = '#777';
+    cx.fillText(`${ev.minute}'`, MID_X, rowMid - 17);
+
+    // Dot
+    cx.beginPath(); cx.arc(MID_X, rowMid - 6, 5.5, 0, Math.PI * 2);
+    cx.fillStyle = isUs ? '#27ae60' : '#e74c3c'; cx.fill();
+    cx.strokeStyle = '#0e0e1c'; cx.lineWidth = 1.5; cx.stroke();
+
+    // Score pill badge
+    const bw = 40, bh = 15, bx = MID_X - bw / 2, by = rowMid + 5;
+    cx.fillStyle = isUs ? 'rgba(39,174,96,0.22)' : 'rgba(231,76,60,0.22)';
+    mdRoundRect(cx, bx, by, bw, bh, 7); cx.fill();
+    cx.strokeStyle = isUs ? 'rgba(39,174,96,0.45)' : 'rgba(231,76,60,0.45)';
+    cx.lineWidth = 0.8;
+    mdRoundRect(cx, bx, by, bw, bh, 7); cx.stroke();
+    cx.font = 'bold 9px "Segoe UI", sans-serif';
+    cx.fillStyle = isUs ? '#6fcf97' : '#e57373';
+    cx.textAlign = 'center'; cx.textBaseline = 'middle';
+    cx.fillText(scoreStr, MID_X, by + bh / 2);
 
     y += ROW_H;
   });
