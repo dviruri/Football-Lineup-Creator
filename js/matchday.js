@@ -230,6 +230,59 @@ function mdRenderPitch() {
   renderToCanvas(mdCanvas, mdGetFormationSlots());
 }
 
+// ── Manual substitution ───────────────────────────────────────────────────────
+
+function mdOpenManualSub() {
+  const { onPitch, offPitch } = mdLivePitchState();
+
+  const chip = (p, cls) =>
+    `<label class="sub-check-label">
+       <input type="checkbox" class="${cls}" value="${esc(p.name)}">
+       <span style="color:#888;min-width:20px;display:inline-block;font-size:0.8rem;">${esc(p.number)}</span>
+       ${esc(p.name)}
+     </label>`;
+  const empty = `<span class="planner-empty-small">${t('matchday.noPlayers')}</span>`;
+
+  const outDiv = document.getElementById('mdSubOut');
+  const inDiv  = document.getElementById('mdSubIn');
+  if (!outDiv || !inDiv) return;
+
+  outDiv.innerHTML = onPitch.length  ? onPitch.map(p  => chip(p, 'md-sub-out-check')).join('') : empty;
+  inDiv.innerHTML  = offPitch.length ? offPitch.map(p => chip(p, 'md-sub-in-check')).join('')  : empty;
+
+  document.getElementById('mdSubMinute').value = Math.floor(mdElapsedSec / 60);
+  document.getElementById('mdSubModal').style.display = 'flex';
+}
+
+function mdConfirmManualSub() {
+  const outDiv = document.getElementById('mdSubOut');
+  const inDiv  = document.getElementById('mdSubIn');
+  const minute = Math.max(0, parseInt(document.getElementById('mdSubMinute')?.value) || Math.floor(mdElapsedSec / 60));
+
+  const playersOut = [...outDiv.querySelectorAll('.md-sub-out-check:checked')].map(c => c.value);
+  const playersIn  = [...inDiv.querySelectorAll('.md-sub-in-check:checked')].map(c => c.value);
+
+  if (!playersOut.length || !playersIn.length) {
+    showToast(t('matchday.selectWarning'));
+    return;
+  }
+
+  subEvents.push({
+    id:        'md_' + Date.now(),
+    minute,
+    playersOut,
+    playersIn,
+    notes:     t('matchday.manualSub'),
+    completed: true,
+  });
+
+  savePlanner();
+  renderPlanner();
+  document.getElementById('mdSubModal').style.display = 'none';
+  mdRenderAll();
+  showToast(t('matchday.subDone'));
+}
+
 // ── Note persistence ──────────────────────────────────────────────────────────
 
 function mdSaveNote() {

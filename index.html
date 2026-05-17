@@ -306,6 +306,9 @@
         <button class="md-confirm-btn" onclick="mdMarkNextSubDone()" data-i18n="matchday.makeSubNow">✓ Make Sub Now</button>
       </div>
 
+      <!-- MANUAL SUB BUTTON -->
+      <button class="md-manual-sub-btn" onclick="mdOpenManualSub()" data-i18n="matchday.manualSubBtn">⇄ Manual Sub</button>
+
       <!-- SUBSTITUTION PLAN -->
       <div class="md-card">
         <div class="md-card-title" data-i18n="matchday.subPlan">Substitution Plan</div>
@@ -330,6 +333,29 @@
 
   </div><!-- /md-layout -->
 </div><!-- /page-matchday -->
+
+<!-- MATCHDAY MANUAL SUB MODAL -->
+<div id="mdSubModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <h2 data-i18n="matchday.manualSubTitle">Manual Substitution</h2>
+    <span class="modal-label" data-i18n="planner.minute">Minute</span>
+    <input type="number" id="mdSubMinute" min="0" max="200" style="margin-bottom:12px;">
+    <div class="md-sub-cols">
+      <div>
+        <span class="modal-label" data-i18n="planner.playersOut">Players Off</span>
+        <div id="mdSubOut" class="sub-player-select"></div>
+      </div>
+      <div>
+        <span class="modal-label" data-i18n="planner.playersIn">Players On</span>
+        <div id="mdSubIn" class="sub-player-select"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" data-i18n="btn.cancel" onclick="document.getElementById('mdSubModal').style.display='none'">Cancel</button>
+      <button class="btn-primary" data-i18n="matchday.confirmSub" onclick="mdConfirmManualSub()">✓ Confirm Sub</button>
+    </div>
+  </div>
+</div>
 
 <!-- PLAYER MODAL -->
 <div id="playerModal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closePlayerModal()">
@@ -494,7 +520,7 @@
   <div id="pickList"></div>
 </div>
 
-<script src="js/i18n.js?v=17"></script>
+<script src="js/i18n.js?v=18"></script>
 <script src="js/config.js?v=10"></script>
 <script src="js/state.js?v=10"></script>
 <script src="js/utils.js?v=10"></script>
@@ -503,7 +529,7 @@
 <script src="js/lineup.js?v=10"></script>
 <script src="js/render.js?v=11"></script>
 <script src="js/planner.js?v=31"></script>
-<script src="js/matchday.js?v=1"></script>
+<script src="js/matchday.js?v=2"></script>
 <script src="js/app.js?v=10"></script>
 </body>
 </html>

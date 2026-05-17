@@ -591,6 +591,32 @@ header { position: relative; }
 }
 .md-note-field:focus { border-color: #e94560; outline: none; }
 
+/* Manual sub button */
+.md-manual-sub-btn {
+  width: 100%;
+  background: #1e1e3a;
+  color: #ccc;
+  border: 1px solid #3a3a5e;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.md-manual-sub-btn:hover  { background: #2a2a50; color: #fff; }
+.md-manual-sub-btn:active { opacity: 0.75; }
+
+/* Two-column player picker inside manual sub modal */
+.md-sub-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 /* Mobile: single column, pitch on top */
 @media (max-width: 720px) {
   .md-layout { flex-direction: column; padding: 10px; gap: 10px; }

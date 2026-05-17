@@ -233,6 +233,11 @@ const TRANSLATIONS = {
     'matchday.notesPh':       'Quick notes during the match…',
     'matchday.noPlayers':     'No players',
     'matchday.subDone':       'Substitution marked!',
+    'matchday.manualSubBtn':  '⇄ Manual Sub',
+    'matchday.manualSubTitle':'Manual Substitution',
+    'matchday.manualSub':     'Manual',
+    'matchday.confirmSub':    '✓ Confirm Sub',
+    'matchday.selectWarning': 'Select at least one player off and one player on.',
   },
   he: {
     // App name & header
@@ -467,6 +472,11 @@ const TRANSLATIONS = {
     'matchday.notesPh':       'הערות מהירות במהלך המשחק…',
     'matchday.noPlayers':     'אין שחקנים',
     'matchday.subDone':       '!חילוף בוצע',
+    'matchday.manualSubBtn':  '⇄ חילוף ידני',
+    'matchday.manualSubTitle':'חילוף ידני',
+    'matchday.manualSub':     'ידני',
+    'matchday.confirmSub':    '✓ אשר חילוף',
+    'matchday.selectWarning': 'יש לבחור לפחות שחקן יוצא ושחקן נכנס.',
   }
 };
 
